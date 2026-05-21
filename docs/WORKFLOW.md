@@ -15,6 +15,26 @@ how we ship the ux overhaul. keep it light.
 - rebase on `main` before opening pr if stale
 - short-lived. merge or close within a few days.
 
+## worktrees (required for parallel tracks)
+
+multiple tabs on the same `/Users/reuba/strong` checkout collide — one tab switches the branch under another mid-build, stash entries mix, node_modules gets contaminated. always use a dedicated worktree per track:
+
+```
+cd /Users/reuba/strong
+git worktree add ../strong-track-<id> -b track/<id>-<slug>
+cd ../strong-track-<id>
+npm install   # first time only; subsequent worktrees can `ln -s ../strong/node_modules .` if disk space matters
+```
+
+work in `../strong-track-<id>` for the entire track. when done and merged, clean up:
+
+```
+cd /Users/reuba/strong
+git worktree remove ../strong-track-<id>
+```
+
+if you forget and end up with two tabs in `/Users/reuba/strong`, stop, `git stash`, create the worktree, then `git stash pop` inside it.
+
 ## commits
 
 - author: you (reuban ramsden). **never** add `Co-Authored-By: Claude` or "generated with claude code" footers.
