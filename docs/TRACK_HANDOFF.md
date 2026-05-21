@@ -20,7 +20,7 @@ workflow: [workflow.md](./WORKFLOW.md)
 |---|---|---|---|---|---|---|
 | 0.1 | design tokens & primitives | done | `track/0.1-design-tokens` | [#3](https://github.com/reubxn/setdown/pull/3) | tab-a | merged |
 | 0.2 | convex setup & schema | done | `track/0.2-convex-setup` | [#4](https://github.com/reubxn/setdown/pull/4) | tab-b | merged |
-| 1.0 | auth context & login | wip | `track/1.0-auth` | - | tab-a | needs 0.1 + 0.2 |
+| 1.0 | auth context & login | pr | `track/1.0-auth` | [#6](https://github.com/reubxn/setdown/pull/6) | tab-a | edits `convex/schema.ts` (0.2-owned) to align users with authTables — see notes |
 | 1.1 | design system components | wip | `track/1.1-design-system` | - | tab-b | needs 0.1 |
 | 1.2 | landing page | todo | `track/1.2-landing` | - | - | needs 0.1, 1.1, 1.4 (stub ok) |
 | 1.3 | nav shell rebuild | todo | `track/1.3-nav-shell` | - | - | needs 0.1, 1.1, 1.0 |
@@ -62,3 +62,4 @@ workflow: [workflow.md](./WORKFLOW.md)
 append-only. one line each, datestamped.
 
 - 2026-05-21: spec drafted, board initialized
+- 2026-05-21: track 1.0 (tab-a) reshapes `convex/schema.ts` users table to extend `authTables.users` (was overriding it, breaking auth). flagged on pr #6 for 0.2 review.
