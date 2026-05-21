@@ -28,7 +28,7 @@ workflow: [workflow.md](./WORKFLOW.md)
 | 1.5 | dashboard overview | todo | `track/1.5-overview` | - | - | needs 0.1, 1.1, 1.3 |
 | 1.6 | exercise pages | todo | `track/1.6-exercises` | - | - | needs 0.1, 1.1, 1.3 |
 | 1.7 | history + session detail | todo | `track/1.7-history` | - | - | needs 0.1, 1.1, 1.3 |
-| 1.8 | ai subsystem | todo | `track/1.8-ai` | - | - | needs 0.2, 1.0, 1.1 |
+| 1.8 | ai subsystem | pr | `track/1.8-ai` | [#13](https://github.com/reubxn/setdown/pull/13) | tab-4 | needs 0.2, 1.0, 1.1; adds new dir `convex/ai/` (storage helpers) |
 | 1.9 | analytics (muscle/streak/body) | todo | `track/1.9-analytics` | - | - | needs 0.1, 1.1, 0.2 |
 | 1.10 | settings + data mgmt | wip | `track/1.10-settings` | - | tab-6 | needs 0.1, 1.1, 0.2, 1.4 |
 | 2.1 | migrate old component usages | todo | `track/2.1-migrate-usages` | - | - | phase 2 |
@@ -63,3 +63,4 @@ append-only. one line each, datestamped.
 
 - 2026-05-21: spec drafted, board initialized
 - 2026-05-21: track 1.0 (tab-a) reshapes `convex/schema.ts` users table to extend `authTables.users` (was overriding it, breaking auth). flagged on pr #6 for 0.2 review.
+- 2026-05-21: track 1.8 (tab-4) adds new dir `convex/ai/insight_storage.ts` (public + internal queries/mutations for insights and chat). schedule of `generateInsights` from `uploadDataset` is left to track 1.4 once that mutation is implemented (action is callable directly).
