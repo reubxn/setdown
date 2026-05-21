@@ -50,6 +50,14 @@ minimal — just stop bad code reaching main. runs on every pr.
 - test (`vitest run`)
 - build (`next build`)
 
+**note: github actions is currently disabled on this repo (account flagged). until it's re-enabled, run all checks locally before pushing:**
+
+```
+npm run lint && npx tsc --noEmit && npm test && npm run build
+```
+
+do not push or open a pr until those four pass locally.
+
 no deploy preview workflow needed — vercel handles that automatically per pr.
 
 ## release / deploy
