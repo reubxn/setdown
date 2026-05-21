@@ -22,15 +22,15 @@ workflow: [workflow.md](./WORKFLOW.md)
 | 0.2 | convex setup & schema | done | `track/0.2-convex-setup` | [#4](https://github.com/reubxn/setdown/pull/4) | tab-b | merged |
 | 1.0 | auth context & login | pr | `track/1.0-auth` | [#6](https://github.com/reubxn/setdown/pull/6) | tab-a | edits `convex/schema.ts` (0.2-owned) to align users with authTables — see notes |
 | 1.1 | design system components | wip | `track/1.1-design-system` | - | tab-b | needs 0.1 |
-| 1.2 | landing page | todo | `track/1.2-landing` | - | - | needs 0.1, 1.1, 1.4 (stub ok) |
-| 1.3 | nav shell rebuild | todo | `track/1.3-nav-shell` | - | - | needs 0.1, 1.1, 1.0 |
+| 1.2 | landing page | wip | `track/1.2-landing` | - | tab-1 | needs 0.1, 1.1, 1.4 (stub ok) |
+| 1.3 | nav shell rebuild | pr | `track/1.3-nav-shell` | [#11](https://github.com/reubxn/setdown/pull/11) | tab-2 | needs 0.1, 1.1, 1.0 |
 | 1.4 | upload flow rewrite | todo | `track/1.4-upload` | - | - | needs 0.1, 1.1, 0.2 |
 | 1.5 | dashboard overview | todo | `track/1.5-overview` | - | - | needs 0.1, 1.1, 1.3 |
 | 1.6 | exercise pages | todo | `track/1.6-exercises` | - | - | needs 0.1, 1.1, 1.3 |
 | 1.7 | history + session detail | todo | `track/1.7-history` | - | - | needs 0.1, 1.1, 1.3 |
 | 1.8 | ai subsystem | todo | `track/1.8-ai` | - | - | needs 0.2, 1.0, 1.1 |
 | 1.9 | analytics (muscle/streak/body) | todo | `track/1.9-analytics` | - | - | needs 0.1, 1.1, 0.2 |
-| 1.10 | settings + data mgmt | todo | `track/1.10-settings` | - | - | needs 0.1, 1.1, 0.2, 1.4 |
+| 1.10 | settings + data mgmt | wip | `track/1.10-settings` | - | tab-6 | needs 0.1, 1.1, 0.2, 1.4 |
 | 2.1 | migrate old component usages | todo | `track/2.1-migrate-usages` | - | - | phase 2 |
 | 2.2 | empty states everywhere | todo | `track/2.2-empty-states` | - | - | phase 2 |
 | 2.3 | loading & error states | todo | `track/2.3-loading-errors` | - | - | phase 2 |
