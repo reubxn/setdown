@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useDataset } from "@/context/dataset-context";
-import { PrimaryButton } from "@/components/ui/primary-button";
-import { MetricCard } from "@/components/ui/card";
+import { PrimaryButton } from "@/components/legacy/primary-button";
+import { MetricCard } from "@/components/legacy/card";
 import { PageShell } from "@/components/layout/page-shell";
 import { format } from "date-fns";
 
