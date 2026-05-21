@@ -24,7 +24,7 @@ workflow: [workflow.md](./WORKFLOW.md)
 | 1.1 | design system components | wip | `track/1.1-design-system` | - | tab-b | needs 0.1 |
 | 1.2 | landing page | todo | `track/1.2-landing` | - | - | needs 0.1, 1.1, 1.4 (stub ok) |
 | 1.3 | nav shell rebuild | todo | `track/1.3-nav-shell` | - | - | needs 0.1, 1.1, 1.0 |
-| 1.4 | upload flow rewrite | wip | `track/1.4-upload` | - | tab-3 | needs 0.1, 1.1, 0.2 |
+| 1.4 | upload flow rewrite | pr | `track/1.4-upload` | [#10](https://github.com/reubxn/setdown/pull/10) | tab-3 | needs 0.1, 1.1, 0.2 |
 | 1.5 | dashboard overview | todo | `track/1.5-overview` | - | - | needs 0.1, 1.1, 1.3 |
 | 1.6 | exercise pages | todo | `track/1.6-exercises` | - | - | needs 0.1, 1.1, 1.3 |
 | 1.7 | history + session detail | todo | `track/1.7-history` | - | - | needs 0.1, 1.1, 1.3 |
