@@ -15,6 +15,7 @@ import type * as http from "../http.js";
 import type * as mutations_saveBodyMeasurement from "../mutations/saveBodyMeasurement.js";
 import type * as mutations_saveChatMessage from "../mutations/saveChatMessage.js";
 import type * as mutations_uploadDataset from "../mutations/uploadDataset.js";
+import type * as queries_getBodyMeasurements from "../queries/getBodyMeasurements.js";
 import type * as queries_getCurrentUser from "../queries/getCurrentUser.js";
 import type * as queries_getInsights from "../queries/getInsights.js";
 import type * as queries_getLatestDataset from "../queries/getLatestDataset.js";
@@ -34,6 +35,7 @@ declare const fullApi: ApiFromModules<{
   "mutations/saveBodyMeasurement": typeof mutations_saveBodyMeasurement;
   "mutations/saveChatMessage": typeof mutations_saveChatMessage;
   "mutations/uploadDataset": typeof mutations_uploadDataset;
+  "queries/getBodyMeasurements": typeof queries_getBodyMeasurements;
   "queries/getCurrentUser": typeof queries_getCurrentUser;
   "queries/getInsights": typeof queries_getInsights;
   "queries/getLatestDataset": typeof queries_getLatestDataset;

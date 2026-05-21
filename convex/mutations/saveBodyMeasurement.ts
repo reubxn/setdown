@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 export default mutation({
   args: {
@@ -8,8 +9,17 @@ export default mutation({
     bodyFatPct: v.optional(v.number()),
     measurements: v.optional(v.record(v.string(), v.number())),
   },
-  handler: async () => {
-    // implemented in phase 1 — see track 1.9
-    throw new Error("not implemented");
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) throw new Error("not authenticated");
+
+    const id = await ctx.db.insert("bodyMeasurements", {
+      userId,
+      date: args.date,
+      weightKg: args.weightKg,
+      bodyFatPct: args.bodyFatPct,
+      measurements: args.measurements,
+    });
+    return id;
   },
 });
