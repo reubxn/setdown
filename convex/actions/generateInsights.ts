@@ -4,6 +4,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { v } from "convex/values";
 import { action } from "../_generated/server";
 import { api, internal } from "../_generated/api";
+import { rateLimiter } from "../rateLimits";
 
 type InsightKind = "overview" | "exercise" | "plateau" | "balance" | "streak";
 
@@ -173,6 +174,11 @@ export default action({
       {},
     );
     if (!userInfo) throw new Error("Not authenticated");
+
+    await rateLimiter.limit(ctx, "generateInsights", {
+      key: userInfo._id,
+      throws: true,
+    });
 
     const dataset = (await ctx.runQuery(
       api.queries.getLatestDataset.default,

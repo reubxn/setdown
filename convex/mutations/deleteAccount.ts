@@ -1,11 +1,17 @@
 import { mutation } from "../_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { rateLimiter } from "../rateLimits";
 
 export default mutation({
   args: {},
   handler: async (ctx) => {
     const userId = await getAuthUserId(ctx);
     if (userId === null) throw new Error("Not authenticated");
+
+    await rateLimiter.limit(ctx, "deleteAccount", {
+      key: userId,
+      throws: true,
+    });
 
     const sets = await ctx.db
       .query("workoutSets")

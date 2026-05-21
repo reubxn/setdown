@@ -1,5 +1,6 @@
 import { mutation } from "../_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { rateLimiter } from "../rateLimits";
 
 // Removes all user-owned content but keeps the user record.
 export default mutation({
@@ -7,6 +8,8 @@ export default mutation({
   handler: async (ctx) => {
     const userId = await getAuthUserId(ctx);
     if (userId === null) throw new Error("Not authenticated");
+
+    await rateLimiter.limit(ctx, "wipeData", { key: userId, throws: true });
 
     const sets = await ctx.db
       .query("workoutSets")
