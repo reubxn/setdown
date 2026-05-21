@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { DatasetProvider } from "@/context/dataset-context";
-import { ConvexClientProvider } from "@/components/convex-client-provider";
+import { AuthProvider } from "@/context/auth-context";
 import "./globals.css";
 
 const geist = Geist({
@@ -22,9 +22,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`${geist.variable} antialiased`}>
-        <ConvexClientProvider>
+        <AuthProvider>
           <DatasetProvider>{children}</DatasetProvider>
-        </ConvexClientProvider>
+        </AuthProvider>
       </body>
     </html>
   );

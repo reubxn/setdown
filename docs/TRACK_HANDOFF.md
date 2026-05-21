@@ -20,8 +20,8 @@ workflow: [workflow.md](./WORKFLOW.md)
 |---|---|---|---|---|---|---|
 | 0.1 | design tokens & primitives | done | `track/0.1-design-tokens` | [#3](https://github.com/reubxn/setdown/pull/3) | tab-a | merged |
 | 0.2 | convex setup & schema | done | `track/0.2-convex-setup` | [#4](https://github.com/reubxn/setdown/pull/4) | tab-b | merged |
-| 1.0 | auth context & login | todo | `track/1.0-auth` | - | - | needs 0.1 + 0.2 |
-| 1.1 | design system components | done | `track/1.1-design-system` | [#7](https://github.com/reubxn/setdown/pull/7) | tab-b | merged |
+| 1.0 | auth context & login | pr | `track/1.0-auth` | [#6](https://github.com/reubxn/setdown/pull/6) | tab-a | edits `convex/schema.ts` (0.2-owned) to align users with authTables — see notes |
+| 1.1 | design system components | wip | `track/1.1-design-system` | - | tab-b | needs 0.1 |
 | 1.2 | landing page | todo | `track/1.2-landing` | - | - | needs 0.1, 1.1, 1.4 (stub ok) |
 | 1.3 | nav shell rebuild | todo | `track/1.3-nav-shell` | - | - | needs 0.1, 1.1, 1.0 |
 | 1.4 | upload flow rewrite | todo | `track/1.4-upload` | - | - | needs 0.1, 1.1, 0.2 |
@@ -62,5 +62,4 @@ workflow: [workflow.md](./WORKFLOW.md)
 append-only. one line each, datestamped.
 
 - 2026-05-21: spec drafted, board initialized
-- 2026-05-21: track 1.1 — pre-existing deprecated files lived at `components/ui/*` (not `components/*` as spec assumed). moved them to `components/legacy/` so new design system can take the spec-canonical `components/ui/*` slots. import sites in 4 files updated to `@/components/legacy/*`. track 2.1 cleanup is now `rm -rf components/legacy/` instead of individual file deletes.
-- 2026-05-21: heads-up for track 1.0 (tab-a) — rebasing on main pulls in the legacy relocation. any new auth components importing `@/components/ui/{primary-button,card,...}` will break; either repoint to `@/components/legacy/*` or (preferred) use the new design system (`Button variant="primary"`, `Modal`, `Dropdown`, `IconButton` from `@/components/ui/*`).
+- 2026-05-21: track 1.0 (tab-a) reshapes `convex/schema.ts` users table to extend `authTables.users` (was overriding it, breaking auth). flagged on pr #6 for 0.2 review.
