@@ -29,7 +29,7 @@ workflow: [workflow.md](./WORKFLOW.md)
 | 1.6 | exercise pages | todo | `track/1.6-exercises` | - | - | needs 0.1, 1.1, 1.3 |
 | 1.7 | history + session detail | todo | `track/1.7-history` | - | - | needs 0.1, 1.1, 1.3 |
 | 1.8 | ai subsystem | todo | `track/1.8-ai` | - | - | needs 0.2, 1.0, 1.1 |
-| 1.9 | analytics (muscle/streak/body) | wip | `track/1.9-analytics` | - | tab-5 | needs 0.1, 1.1, 0.2 |
+| 1.9 | analytics (muscle/streak/body) | pr | `track/1.9-analytics` | [#12](https://github.com/reubxn/setdown/pull/12) | tab-5 | needs 0.1, 1.1, 0.2 |
 | 1.10 | settings + data mgmt | todo | `track/1.10-settings` | - | - | needs 0.1, 1.1, 0.2, 1.4 |
 | 2.1 | migrate old component usages | todo | `track/2.1-migrate-usages` | - | - | phase 2 |
 | 2.2 | empty states everywhere | todo | `track/2.2-empty-states` | - | - | phase 2 |
