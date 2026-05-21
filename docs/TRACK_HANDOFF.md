@@ -22,7 +22,7 @@ workflow: [workflow.md](./WORKFLOW.md)
 | 0.2 | convex setup & schema | done | `track/0.2-convex-setup` | [#4](https://github.com/reubxn/setdown/pull/4) | tab-b | merged |
 | 1.0 | auth context & login | pr | `track/1.0-auth` | [#6](https://github.com/reubxn/setdown/pull/6) | tab-a | edits `convex/schema.ts` (0.2-owned) to align users with authTables — see notes |
 | 1.1 | design system components | wip | `track/1.1-design-system` | - | tab-b | needs 0.1 |
-| 1.2 | landing page | todo | `track/1.2-landing` | - | - | needs 0.1, 1.1, 1.4 (stub ok) |
+| 1.2 | landing page | wip | `track/1.2-landing` | - | tab-1 | needs 0.1, 1.1, 1.4 (stub ok); dropzone stubbed inline in hero, 1.4 replaces |
 | 1.3 | nav shell rebuild | todo | `track/1.3-nav-shell` | - | - | needs 0.1, 1.1, 1.0 |
 | 1.4 | upload flow rewrite | todo | `track/1.4-upload` | - | - | needs 0.1, 1.1, 0.2 |
 | 1.5 | dashboard overview | todo | `track/1.5-overview` | - | - | needs 0.1, 1.1, 1.3 |
