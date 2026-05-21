@@ -1,21 +1,14 @@
 import { convex } from "@/lib/convex-client";
 import { api } from "@/convex/_generated/api";
 import { loadDataset, clearDataset } from "@/lib/storage";
+import { slugifyExercise } from "@/lib/parse-strong-csv";
 import type { WorkoutSet } from "@/lib/types";
-
-function slugify(name: string): string {
-  return name
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
 
 function toConvexSet(s: WorkoutSet, setOrderIdx: number) {
   return {
     date: s.date.getTime(),
     exerciseName: s.exerciseName,
-    exerciseSlug: slugify(s.exerciseName),
+    exerciseSlug: slugifyExercise(s.exerciseName),
     setOrder: setOrderIdx,
     weightKg: s.weight,
     reps: s.reps,
