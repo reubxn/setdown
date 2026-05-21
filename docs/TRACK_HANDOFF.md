@@ -18,8 +18,8 @@ workflow: [workflow.md](./WORKFLOW.md)
 
 | track | name | status | branch | pr | agent | notes |
 |---|---|---|---|---|---|---|
-| 0.1 | design tokens & primitives | pr | `track/0.1-design-tokens` | [#3](https://github.com/reubxn/setdown/pull/3) | tab-a | blocks most of phase 1 |
-| 0.2 | convex setup & schema | wip | `track/0.2-convex-setup` | - | tab-b | blocks 1.0, 1.4, 1.8, 1.9, 1.10 |
+| 0.1 | design tokens & primitives | done | `track/0.1-design-tokens` | [#3](https://github.com/reubxn/setdown/pull/3) | tab-a | merged |
+| 0.2 | convex setup & schema | done | `track/0.2-convex-setup` | [#4](https://github.com/reubxn/setdown/pull/4) | tab-b | merged |
 | 1.0 | auth context & login | todo | `track/1.0-auth` | - | - | needs 0.1 + 0.2 |
 | 1.1 | design system components | todo | `track/1.1-design-system` | - | - | needs 0.1 |
 | 1.2 | landing page | todo | `track/1.2-landing` | - | - | needs 0.1, 1.1, 1.4 (stub ok) |
