@@ -199,7 +199,11 @@ export function parseStrongCsv(
 }
 
 export function slugifyExercise(name: string): string {
-  return encodeURIComponent(name.toLowerCase().replace(/\s+/g, "-"));
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
 export function exerciseFromSlug(
