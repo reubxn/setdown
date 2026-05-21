@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+:root {
+  --bg-primary: #0a0a0b;
+  --bg-secondary: #0f141a;
+  --card: #1a2128;
+  --card-alt: #1c1c1e;
+  --text-primary: #ffffff;
+  --text-muted: #7d8b9a;
+  --accent-blue: #00c2ff;
+  --accent-green: #00ff9d;
+  --accent-yellow: #ffd60a;
+  --accent-red: #ff3b30;
+  --chart-bar: #2a3540;
+}
+
+@theme inline {
+  --color-background: var(--bg-primary);
+  --color-foreground: var(--text-primary);
+  --font-sans: var(--font-geist-sans);
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  min-height: 100dvh;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Desktop: visible scrollbars, roomier charts */
+@media (min-width: 1024px) {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+.chart-surface {
+  width: 100%;
+}
+
+.chart-plot {
+  height: 200px;
+  width: 100%;
+}
+
+.chart-surface .recharts-wrapper {
+  cursor: crosshair;
+}
+
+@media (min-width: 1024px) {
+  .chart-plot {
+    height: 280px;
+  }
+
+  .chart-surface-tall .chart-plot {
+    height: 320px;
+  }
+}
