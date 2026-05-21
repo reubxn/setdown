@@ -1,6 +1,6 @@
 "use client";
 
-import { MetricCard } from "@/components/ui/card";
+import { MetricCard } from "@/components/legacy/card";
 import { TimeRangePicker } from "./time-range-picker";
 import { timeRangeLabel, type TimeRange } from "@/lib/time-range";
 import { cn } from "@/lib/utils";

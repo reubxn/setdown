@@ -2,8 +2,8 @@
 
 import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { BottomNav } from "@/components/ui/bottom-nav";
-import { UploadFab } from "@/components/ui/upload-fab";
+import { BottomNav } from "@/components/legacy/bottom-nav";
+import { UploadFab } from "@/components/legacy/upload-fab";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
 import { useDataset } from "@/context/dataset-context";
 

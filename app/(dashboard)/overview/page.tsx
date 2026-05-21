@@ -5,10 +5,10 @@ import { useSearchParams } from "next/navigation";
 import { format } from "date-fns";
 import { Activity, Clock, Dumbbell, TrendingUp } from "lucide-react";
 import { useDataset } from "@/context/dataset-context";
-import { TabNav } from "@/components/ui/tab-nav";
-import { MetricCard, InsightCard } from "@/components/ui/card";
-import { StatRow } from "@/components/ui/stat-row";
-import { SectionLabel } from "@/components/ui/section-label";
+import { TabNav } from "@/components/legacy/tab-nav";
+import { MetricCard, InsightCard } from "@/components/legacy/card";
+import { StatRow } from "@/components/legacy/stat-row";
+import { SectionLabel } from "@/components/legacy/section-label";
 import { PageShell, ChartGrid } from "@/components/layout/page-shell";
 import { ChartCard } from "@/components/charts/chart-card";
 import {

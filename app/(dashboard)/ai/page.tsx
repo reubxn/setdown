@@ -2,8 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useDataset } from "@/context/dataset-context";
-import { ChatInput } from "@/components/ui/chat-input";
-import { InsightCard } from "@/components/ui/card";
+import { ChatInput } from "@/components/legacy/chat-input";
+import { InsightCard } from "@/components/legacy/card";
 import { PageShell } from "@/components/layout/page-shell";
 import { buildAIContext } from "@/lib/ai-context";
 import type { ChatMessage } from "@/lib/types";
