@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation } from "convex/react";
+import { useConvex } from "convex/react";
 import { Download, FileText } from "lucide-react";
 import { api } from "@/convex/_generated/api";
 import { Card, CardHeader, CardBody } from "@/components/ui/card";
@@ -13,7 +13,8 @@ export function ExportSection({
 }: {
   isAuthenticated: boolean;
 }) {
-  const exportData = useMutation(api.mutations.exportUserData.default);
+  const convex = useConvex();
+  const exportData = () => convex.query(api.queries.exportUserData.default, {});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,7 +22,7 @@ export function ExportSection({
     setError(null);
     setBusy(true);
     try {
-      const data = await exportData({});
+      const data = await exportData();
       const blob = new Blob([JSON.stringify(data, null, 2)], {
         type: "application/json",
       });

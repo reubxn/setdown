@@ -1,7 +1,7 @@
-import { mutation } from "../_generated/server";
+import { query } from "../_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 
-export default mutation({
+export default query({
   args: {},
   handler: async (ctx) => {
     const userId = await getAuthUserId(ctx);
