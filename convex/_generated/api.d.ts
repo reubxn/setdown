@@ -9,6 +9,7 @@
  */
 
 import type * as actions_generateInsights from "../actions/generateInsights.js";
+import type * as ai_insight_storage from "../ai/insight_storage.js";
 import type * as auth from "../auth.js";
 import type * as http from "../http.js";
 import type * as mutations_saveBodyMeasurement from "../mutations/saveBodyMeasurement.js";
@@ -28,6 +29,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   "actions/generateInsights": typeof actions_generateInsights;
+  "ai/insight_storage": typeof ai_insight_storage;
   auth: typeof auth;
   http: typeof http;
   "mutations/saveBodyMeasurement": typeof mutations_saveBodyMeasurement;
