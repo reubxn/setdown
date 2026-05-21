@@ -6,12 +6,19 @@ export default defineSchema({
   ...authTables,
 
   users: defineTable({
-    googleId: v.string(),
-    email: v.string(),
-    name: v.string(),
+    // fields populated by @convex-dev/auth on sign-in
+    name: v.optional(v.string()),
+    email: v.optional(v.string()),
+    phone: v.optional(v.string()),
     image: v.optional(v.string()),
-    createdAt: v.number(),
-  }).index("by_googleId", ["googleId"]),
+    emailVerificationTime: v.optional(v.number()),
+    phoneVerificationTime: v.optional(v.number()),
+    isAnonymous: v.optional(v.boolean()),
+    // app-specific
+    createdAt: v.optional(v.number()),
+  })
+    .index("email", ["email"])
+    .index("phone", ["phone"]),
 
   datasets: defineTable({
     userId: v.id("users"),
