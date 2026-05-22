@@ -25,7 +25,7 @@ workflow: [workflow.md](./WORKFLOW.md)
 | 1.2 | landing page | pr | `track/1.2-landing` | [#9](https://github.com/reubxn/setdown/pull/9) | tab-1 | needs 0.1, 1.1, 1.4 (stub ok); dropzone stubbed inline in hero, 1.4 replaces |
 | 1.3 | nav shell rebuild | todo | `track/1.3-nav-shell` | - | - | needs 0.1, 1.1, 1.0 |
 | 1.4 | upload flow rewrite | pr | `track/1.4-upload` | [#10](https://github.com/reubxn/setdown/pull/10) | tab-3 | needs 0.1, 1.1, 0.2 |
-| 1.5 | dashboard overview | todo | `track/1.5-overview` | - | - | needs 0.1, 1.1, 1.3 |
+| 1.5 | dashboard overview | wip | `track/1.5-overview` | - | tab-1 | needs 0.1, 1.1, 1.3 |
 | 1.6 | exercise pages | todo | `track/1.6-exercises` | - | - | needs 0.1, 1.1, 1.3 |
 | 1.7 | history + session detail | todo | `track/1.7-history` | - | - | needs 0.1, 1.1, 1.3 |
 | 1.8 | ai subsystem | todo | `track/1.8-ai` | - | - | needs 0.2, 1.0, 1.1 |
