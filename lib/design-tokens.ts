@@ -17,12 +17,12 @@ export const colors = {
   textPrimary: "#ffffff",
   textSecondary: "#c2c8d0",
   textMuted: "#7d8b9a",
-  accent: "#00d26a",
-  accentHover: "#00b85c",
-  accentMuted: "rgba(0, 210, 106, 0.16)",
+  accent: "#1d4ed8",
+  accentHover: "#1e40af",
+  accentMuted: "rgba(29, 78, 216, 0.16)",
   danger: "#ff4d4f",
   warn: "#ffb020",
-  success: "#00d26a",
+  success: "#22c55e",
 } as const;
 
 /** 4px base scale. Use these for padding, gaps, margins. */

@@ -27,15 +27,15 @@
   --text-secondary: #c2c8d0;
   --text-muted: #7d8b9a;
 
-  /* accent — bold green */
-  --accent: #00d26a;
-  --accent-hover: #00b85c;
-  --accent-muted: rgba(0, 210, 106, 0.16);
+  /* accent — sport blue */
+  --accent: #1d4ed8;
+  --accent-hover: #1e40af;
+  --accent-muted: rgba(29, 78, 216, 0.16);
 
   /* semantic */
   --danger: #ff4d4f;
   --warn: #ffb020;
-  --success: #00d26a;
+  --success: #22c55e;
 
   /* radii */
   --radius-sm: 6px;
