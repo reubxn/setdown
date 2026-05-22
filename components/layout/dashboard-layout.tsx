@@ -2,9 +2,8 @@
 
 import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { BottomNav } from "@/components/legacy/bottom-nav";
-import { UploadFab } from "@/components/legacy/upload-fab";
-import { SidebarNav } from "@/components/layout/sidebar-nav";
+import { BottomNav } from "@/components/layout/bottom-nav";
+import { Sidebar } from "@/components/layout/sidebar";
 import { useDataset } from "@/context/dataset-context";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -30,10 +29,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-dvh bg-[var(--bg-primary)]">
-      <SidebarNav />
+      <Sidebar />
       <main className="min-h-dvh pb-24 lg:ml-64 lg:pb-8">{children}</main>
       <BottomNav />
-      <UploadFab />
     </div>
   );
 }

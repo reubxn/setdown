@@ -31,7 +31,7 @@ workflow: [workflow.md](./WORKFLOW.md)
 | 1.8 | ai subsystem | todo | `track/1.8-ai` | - | - | needs 0.2, 1.0, 1.1 |
 | 1.9 | analytics (muscle/streak/body) | wip | `track/1.9-analytics` | - | tab-5 | needs 0.1, 1.1, 0.2 |
 | 1.10 | settings + data mgmt | pr | `track/1.10-settings` | [#14](https://github.com/reubxn/setdown/pull/14) | tab-6 | needs 0.1, 1.1, 0.2, 1.4 |
-| 2.1 | migrate old component usages | todo | `track/2.1-migrate-usages` | - | - | phase 2 |
+| 2.1 | migrate old component usages | pr | `track/2.1-migrate` | [#21](https://github.com/reubxn/setdown/pull/21) | tab-1 | phase 2 |
 | 2.2 | empty states everywhere | todo | `track/2.2-empty-states` | - | - | phase 2 |
 | 2.3 | loading & error states | todo | `track/2.3-loading-errors` | - | - | phase 2 |
 | 2.4 | a11y audit | todo | `track/2.4-a11y` | - | - | phase 2 |
