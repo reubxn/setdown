@@ -15,11 +15,27 @@ import type { ChatDisplay } from "@/lib/ai/display";
 const DAILY_LIMIT = 50;
 const MAX_BODY_BYTES = 1_500_000; // ~1.5 MB — enough to fit a season of training
 const MAX_TOOL_TURNS = 6;
+const MAX_HISTORY_CHARS = 4096;
 const MODEL = "claude-sonnet-4-6";
 
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
+  // Reject cross-origin browser requests outright. Bearer-token auth already
+  // covers CSRF for cookie-less flows, but an origin pin is cheap defense
+  // against a stolen token being replayed from an attacker page.
+  const requestUrl = new URL(request.url);
+  const origin = request.headers.get("origin");
+  if (origin) {
+    try {
+      if (new URL(origin).host !== requestUrl.host) {
+        return Response.json({ error: "Forbidden" }, { status: 403 });
+      }
+    } catch {
+      return Response.json({ error: "Forbidden" }, { status: 403 });
+    }
+  }
+
   const auth = request.headers.get("authorization") ?? "";
   const token = auth.toLowerCase().startsWith("bearer ")
     ? auth.slice(7).trim()
@@ -34,7 +50,7 @@ export async function POST(request: Request) {
   const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
   if (!convexUrl) {
     return Response.json(
-      { error: "Convex is not configured." },
+      { error: "AI is currently unavailable." },
       { status: 503 },
     );
   }
@@ -50,14 +66,6 @@ export async function POST(request: Request) {
   }
   if (!user) {
     return Response.json({ error: "Not authenticated." }, { status: 401 });
-  }
-
-  const usage = await convex.query(api.ai.insight_storage.chatUsageToday, {});
-  if (usage.used >= DAILY_LIMIT) {
-    return Response.json(
-      { error: `Daily limit reached (${DAILY_LIMIT} messages).` },
-      { status: 429 },
-    );
   }
 
   const contentType = request.headers.get("content-type") ?? "";
@@ -95,9 +103,30 @@ export async function POST(request: Request) {
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
+    // Don't echo the env-var name to clients; log server-side instead.
+    console.error("ANTHROPIC_API_KEY missing");
     return Response.json(
-      { error: "AI is not configured. Set ANTHROPIC_API_KEY on the server." },
+      { error: "AI is currently unavailable." },
       { status: 503 },
+    );
+  }
+
+  // Reserves one unit of the chatRequest rate-limit bucket and verifies the
+  // caller is under the daily cap. Throws "daily_limit" if the user has hit
+  // the day cap, or a rate-limit error otherwise.
+  try {
+    await convex.mutation(api.ai.insight_storage.reserveChatTurn, {});
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "";
+    if (msg.includes("daily_limit")) {
+      return Response.json(
+        { error: `Daily limit reached (${DAILY_LIMIT} messages).` },
+        { status: 429 },
+      );
+    }
+    return Response.json(
+      { error: "Too many requests. Try again later." },
+      { status: 429 },
     );
   }
 
@@ -124,12 +153,17 @@ export async function POST(request: Request) {
 
   const dataset = rehydrateDataset(serializedDataset);
 
+  // Truncate stored message content before re-feeding into the model so a
+  // poisoned history can't multiply token cost across turns.
   const history = priorMessages
     .filter((m) => m.content.trim().length > 0)
     .slice(-10)
     .map((m) => ({
       role: m.role,
-      content: m.content,
+      content:
+        m.content.length > MAX_HISTORY_CHARS
+          ? m.content.slice(0, MAX_HISTORY_CHARS) + "…"
+          : m.content,
     })) as Anthropic.MessageParam[];
 
   const client = new Anthropic({ apiKey });
@@ -294,7 +328,7 @@ export async function POST(request: Request) {
   return new Response(readable, {
     headers: {
       "Content-Type": "application/x-ndjson; charset=utf-8",
-      "Cache-Control": "no-cache",
+      "Cache-Control": "no-store",
     },
   });
 }

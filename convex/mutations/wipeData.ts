@@ -35,6 +35,12 @@ export default mutation({
       .collect();
     for (const c of chats) await ctx.db.delete(c._id);
 
+    const threads = await ctx.db
+      .query("chatThreads")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+    for (const t of threads) await ctx.db.delete(t._id);
+
     const measurements = await ctx.db
       .query("bodyMeasurements")
       .withIndex("by_user_date", (q) => q.eq("userId", userId))

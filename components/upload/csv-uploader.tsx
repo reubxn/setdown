@@ -6,6 +6,8 @@ import { EmptyStateCard } from "./empty-state-card";
 import { parseStrongCsv } from "@/lib/parse-strong-csv";
 import { useDataset } from "@/context/dataset-context";
 
+const MAX_FILE_BYTES = 10 * 1024 * 1024;
+
 export function CsvUploader() {
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -18,6 +20,10 @@ export function CsvUploader() {
   const processFile = useCallback(
     async (file: File) => {
       setError(null);
+      if (file.size > MAX_FILE_BYTES) {
+        setError("File too large. Maximum size is 10 MB.");
+        return;
+      }
       setParsing(true);
       try {
         const text = await file.text();

@@ -1,6 +1,18 @@
 import { query } from "../_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 
+// Drop Convex-internal fields so the returned export blob doesn't carry stable
+// internal identifiers a user might paste into a public bug report or share.
+function stripIds<T extends { _id?: unknown; _creationTime?: unknown; userId?: unknown }>(
+  row: T,
+): Omit<T, "_id" | "_creationTime" | "userId"> {
+  const { _id: _id, _creationTime: _creationTime, userId: _userId, ...rest } = row;
+  void _id;
+  void _creationTime;
+  void _userId;
+  return rest;
+}
+
 export default query({
   args: {},
   handler: async (ctx) => {
@@ -38,17 +50,16 @@ export default query({
     return {
       exportedAt: Date.now(),
       user: {
-        _id: user._id,
         name: user.name ?? null,
         email: user.email ?? null,
         image: user.image ?? null,
         createdAt: user.createdAt ?? null,
       },
-      datasets,
-      workoutSets,
-      insights,
-      chatMessages,
-      bodyMeasurements,
+      datasets: datasets.map(stripIds),
+      workoutSets: workoutSets.map(stripIds),
+      insights: insights.map(stripIds),
+      chatMessages: chatMessages.map(stripIds),
+      bodyMeasurements: bodyMeasurements.map(stripIds),
     };
   },
 });
