@@ -4,6 +4,7 @@ import { Sparkles } from "lucide-react";
 import { useDataset } from "@/context/dataset-context";
 import { useAuth } from "@/context/auth-context";
 import { MuscleBalance } from "@/components/analytics/muscle-balance";
+import { BodyHeatmap } from "@/components/analytics/body-heatmap";
 import { StreakCard } from "@/components/analytics/streak-card";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +37,7 @@ export default function InsightsPage() {
         </Card>
       ) : (
         <div className="grid gap-4 @lg:grid-cols-2">
+          <BodyHeatmap dataset={dataset} />
           <MuscleBalance dataset={dataset} />
           <StreakCard dataset={dataset} />
           <Card className="@lg:col-span-2">
