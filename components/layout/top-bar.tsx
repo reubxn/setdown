@@ -47,7 +47,10 @@ export function TopBar({ className }: { className?: string }) {
           className,
         )}
       >
-        <h1 className="text-base font-semibold tracking-tight text-[var(--text-primary)]">
+        <h1
+          className="text-2xl tracking-wide uppercase text-[var(--text-primary)]"
+          style={{ fontFamily: "var(--font-bebas)" }}
+        >
           {title}
         </h1>
         <div className="flex items-center gap-2">
