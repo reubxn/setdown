@@ -12,6 +12,7 @@ import { Dropzone } from "@/components/upload/dropzone";
 import { KpiRow, type KpiItem } from "@/components/dashboard/kpi-row";
 import { VolumeCard } from "@/components/dashboard/volume-card";
 import { FrequencyCalendar } from "@/components/dashboard/frequency-calendar";
+import { BodyHeatmap } from "@/components/analytics/body-heatmap";
 import { RecentPRs } from "@/components/dashboard/recent-prs";
 import { TopExercises } from "@/components/dashboard/top-exercises";
 import { PeriodCompareCard } from "@/components/dashboard/period-compare";
@@ -153,10 +154,14 @@ export default function OverviewPage() {
       <div className="space-y-4 lg:space-y-6">
         <KpiRow items={kpis} />
 
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-6">
-          <VolumeCard dataset={dataset} />
-          <FrequencyCalendar dataset={dataset} />
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-6">
+          <div className="lg:col-span-2">
+            <VolumeCard dataset={dataset} />
+          </div>
+          <BodyHeatmap dataset={dataset} />
         </div>
+
+        <FrequencyCalendar dataset={dataset} />
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-6">
           <RecentPRs dataset={dataset} />

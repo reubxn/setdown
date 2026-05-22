@@ -22,6 +22,7 @@ import {
 } from "@/lib/derive/one-rm";
 import { exerciseProgressSeries } from "@/lib/chart-series";
 import { ExerciseLineChart } from "@/components/charts/trend-chart";
+import { BodyHeatmap } from "@/components/analytics/body-heatmap";
 
 const COMPARE_COLOR = "#FFD60A";
 const PRIMARY_COLOR = "var(--accent)";
@@ -236,6 +237,14 @@ export default function ExerciseDetailPage() {
             )}
           </CardBody>
         </Card>
+
+        <div className="lg:col-span-2">
+          <BodyHeatmap
+            exerciseNames={[exerciseName]}
+            title="Targeted muscles"
+            subtitle="Primary in solid, secondary lighter"
+          />
+        </div>
       </div>
 
       <div className="mt-6">
