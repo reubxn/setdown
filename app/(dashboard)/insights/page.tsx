@@ -11,6 +11,7 @@ import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
+import { InsightsSkeleton } from "@/components/loading/page-skeletons";
 
 export default function InsightsPage() {
   const { dataset, loading } = useDataset();
@@ -28,7 +29,7 @@ export default function InsightsPage() {
       </header>
 
       {loading ? (
-        <p className="text-sm text-[var(--text-muted)]">Loading…</p>
+        <InsightsSkeleton />
       ) : !dataset ? (
         <EmptyState
           icon={Sparkles}

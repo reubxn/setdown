@@ -18,6 +18,7 @@ import { buildAIContext } from "@/lib/ai/build-context";
 import type { ChatMessage as ChatMessageType } from "@/lib/types";
 import { ChatMessage } from "./chat-message";
 import { SuggestedPrompts } from "./suggested-prompts";
+import { ChatHistorySkeleton } from "@/components/loading/page-skeletons";
 
 interface ChatPanelProps {
   open: boolean;
@@ -193,7 +194,9 @@ export function ChatPanel({ open, onClose, pathname }: ChatPanelProps) {
         ref={scrollRef}
         className="flex h-full flex-col gap-3 overflow-y-auto"
       >
-        {messages.length === 0 && !streaming ? (
+        {open && history === undefined ? (
+          <ChatHistorySkeleton />
+        ) : messages.length === 0 && !streaming ? (
           <div className="space-y-3">
             <p className="text-sm text-[var(--text-secondary)]">
               Ask anything about your training data. Only a compact summary is

@@ -7,16 +7,13 @@ import { PageShell } from "@/components/layout/page-shell";
 import { ExerciseList } from "@/components/exercises/exercise-list";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
+import { ExerciseListSkeleton } from "@/components/loading/page-skeletons";
 
 export default function ExercisesPage() {
   const { dataset, loading } = useDataset();
 
   if (loading) {
-    return (
-      <PageShell title="Exercises">
-        <p className="text-sm text-[var(--text-muted)]">Loading…</p>
-      </PageShell>
-    );
+    return <ExerciseListSkeleton />;
   }
 
   if (!dataset) {
