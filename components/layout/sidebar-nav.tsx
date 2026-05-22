@@ -29,7 +29,7 @@ export function SidebarNav() {
     <aside className="fixed inset-y-0 left-0 z-50 hidden w-64 flex-col border-r border-white/5 bg-[var(--bg-secondary)] lg:flex">
       <div className="flex flex-col gap-1 border-b border-white/5 px-5 py-6">
         <Link href="/overview" className="group">
-          <span className="text-xl font-bold tracking-tight text-white">
+          <span className="font-display text-2xl text-white">
             setdown
           </span>
           <p className="mt-0.5 text-xs text-[var(--text-muted)] group-hover:text-white/80 transition-colors">
@@ -57,7 +57,7 @@ export function SidebarNav() {
               <Icon
                 className={cn(
                   "h-5 w-5 shrink-0",
-                  active ? "text-[var(--accent)]" : ""
+                  active ? "text-[var(--accent-blue)]" : ""
                 )}
                 strokeWidth={1.5}
               />

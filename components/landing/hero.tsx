@@ -12,7 +12,7 @@ export function Hero() {
   return (
     <section className="mx-auto grid w-full max-w-[1200px] gap-10 px-6 pt-16 pb-12 lg:grid-cols-2 lg:gap-16 lg:pt-24 lg:pb-20">
       <div className="flex flex-col justify-center">
-        <h1 className="text-4xl font-semibold tracking-tight text-[var(--text-primary)] sm:text-5xl lg:text-6xl">
+        <h1 className="font-display text-6xl text-[var(--text-primary)] sm:text-7xl lg:text-8xl">
           setdown
         </h1>
         <p className="mt-5 max-w-xl text-base text-[var(--text-secondary)] sm:text-lg">
