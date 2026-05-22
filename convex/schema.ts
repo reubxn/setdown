@@ -61,13 +61,28 @@ export default defineSchema({
     model: v.string(),
   }).index("by_user_version_kind", ["userId", "datasetVersion", "kind"]),
 
+  chatThreads: defineTable({
+    userId: v.id("users"),
+    title: v.string(),
+    createdAt: v.number(),
+    lastMessageAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_last", ["userId", "lastMessageAt"]),
+
   chatMessages: defineTable({
     userId: v.id("users"),
+    threadId: v.optional(v.id("chatThreads")),
     role: v.union(v.literal("user"), v.literal("assistant")),
     content: v.string(),
     createdAt: v.number(),
     pageContext: v.optional(v.string()),
-  }).index("by_user_created", ["userId", "createdAt"]),
+    // Inline UI payloads rendered alongside the assistant's text. Shape is
+    // validated client-side against lib/ai/display.ChatDisplay.
+    displays: v.optional(v.array(v.any())),
+  })
+    .index("by_user_created", ["userId", "createdAt"])
+    .index("by_thread_created", ["threadId", "createdAt"]),
 
   bodyMeasurements: defineTable({
     userId: v.id("users"),
