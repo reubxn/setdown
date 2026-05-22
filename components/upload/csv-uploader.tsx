@@ -29,7 +29,7 @@ export function CsvUploader() {
         if (
           isReplace &&
           !confirm(
-            "Replace existing data? This will overwrite your current workout history."
+            "Catch up with your latest export? We'll update your workouts from this file."
           )
         ) {
           return;
