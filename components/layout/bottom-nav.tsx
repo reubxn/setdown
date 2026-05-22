@@ -6,27 +6,21 @@ import {
   Dumbbell,
   History,
   LayoutDashboard,
-  Settings,
   Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/context/auth-context";
 
 const items = [
   { href: "/overview", label: "Overview", icon: LayoutDashboard },
   { href: "/exercises", label: "Exercises", icon: Dumbbell },
   { href: "/history", label: "History", icon: History },
+  { href: "/coach", label: "Coach", icon: Sparkles },
 ];
 
 export function BottomNav() {
   const pathname = usePathname();
-  const { isAuthenticated } = useAuth();
 
-  const tail = isAuthenticated
-    ? { href: "/coach", label: "Coach", icon: Sparkles }
-    : { href: "/settings", label: "Settings", icon: Settings };
-
-  const all = [...items, tail];
+  const all = items;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-[var(--border-subtle)] bg-[var(--bg-elevated)]/95 backdrop-blur-md lg:hidden">

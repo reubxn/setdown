@@ -91,7 +91,7 @@ export default function CoachPage() {
   // Full-height layout: account for the app-shell's vertical padding
   // (pt-4 pb-24 on mobile, pt-6 pb-8 on lg) so the chat fills what's left.
   return (
-    <div className="mx-auto flex h-[calc(100dvh-7rem)] w-full max-w-5xl flex-col px-2 lg:h-[calc(100dvh-3.5rem)] lg:px-4">
+    <div className="mx-auto flex h-[calc(100dvh-10rem)] w-full max-w-5xl flex-col px-2 lg:h-[calc(100dvh-3.5rem)] lg:px-4">
       <header className="px-2 pb-3 lg:px-4">
         <h1 className="text-2xl font-semibold text-[var(--text-primary)]">
           Coach
