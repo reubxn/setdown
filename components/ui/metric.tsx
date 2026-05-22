@@ -48,8 +48,8 @@ export function Metric({
       ? "negative"
       : "neutral");
   return (
-    <div className={cn("@container flex flex-col gap-1", className)}>
-      <div className="text-[11px] font-medium uppercase tracking-wide text-[var(--text-muted)]">
+    <div className={cn("@container flex min-w-0 flex-col gap-1", className)}>
+      <div className="break-words text-[11px] font-medium uppercase tracking-wide text-[var(--text-muted)]">
         {label}
       </div>
       <div className="flex items-baseline gap-1.5 flex-wrap">

@@ -53,8 +53,8 @@ export function SetHistoryTable({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="overflow-hidden rounded-[var(--radius-md)] border border-[var(--border-subtle)]">
-        <table className="w-full text-sm">
+      <div className="overflow-x-auto rounded-[var(--radius-md)] border border-[var(--border-subtle)]">
+        <table className="w-full min-w-[420px] text-sm">
           <thead className="bg-[var(--bg-sunken)] text-[11px] uppercase tracking-wide text-[var(--text-muted)]">
             <tr>
               <th className="px-3 py-2 text-left font-medium">Date</th>
@@ -71,7 +71,7 @@ export function SetHistoryTable({
                 <td className="whitespace-nowrap px-3 py-3 tabular-nums text-[var(--text-secondary)]">
                   {format(g.date, "MMM d, yyyy")}
                 </td>
-                <td className="px-3 py-3 text-[var(--text-secondary)]">
+                <td className="break-words px-3 py-3 text-[var(--text-secondary)]">
                   {g.workoutName}
                 </td>
                 <td className="px-3 py-3">
