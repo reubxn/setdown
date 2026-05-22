@@ -33,7 +33,7 @@ workflow: [workflow.md](./WORKFLOW.md)
 | 1.10 | settings + data mgmt | pr | `track/1.10-settings` | [#14](https://github.com/reubxn/setdown/pull/14) | tab-6 | needs 0.1, 1.1, 0.2, 1.4 |
 | 2.1 | migrate old component usages | pr | `track/2.1-migrate` | [#21](https://github.com/reubxn/setdown/pull/21) | tab-1 | phase 2 |
 | 2.2 | empty states everywhere | todo | `track/2.2-empty-states` | - | - | phase 2 |
-| 2.3 | loading & error states | todo | `track/2.3-loading-errors` | - | - | phase 2 |
+| 2.3 | loading & error states | pr | `track/2.3-loading-errors` | [#25](https://github.com/reubxn/setdown/pull/25) | tab-1 | phase 2 |
 | 2.4 | a11y audit | todo | `track/2.4-a11y` | - | - | phase 2 |
 | 2.5 | perf pass | todo | `track/2.5-perf` | - | - | phase 2 |
 | 2.6 | telemetry | todo | `track/2.6-telemetry` | - | - | phase 2, optional |

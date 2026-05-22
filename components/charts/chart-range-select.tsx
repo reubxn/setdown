@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 export function useChartRangeSelection(dataLength: number) {
   const [selection, setSelection] = useState<ChartRangeSelection | null>(null);
   const [drag, setDrag] = useState<ChartRangeSelection | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const dragging = useRef(false);
   const anchorIndex = useRef<number | null>(null);
   const dragRange = useRef<ChartRangeSelection | null>(null);
@@ -23,6 +24,7 @@ export function useChartRangeSelection(dataLength: number) {
   const clear = useCallback(() => {
     setSelection(null);
     setDrag(null);
+    setIsDragging(false);
     dragging.current = false;
     anchorIndex.current = null;
     dragRange.current = null;
@@ -38,6 +40,7 @@ export function useChartRangeSelection(dataLength: number) {
       const idx = state?.activeTooltipIndex;
       if (idx == null || idx < 0 || idx >= dataLength) return;
       dragging.current = true;
+      setIsDragging(true);
       anchorIndex.current = idx;
       setDragRange(normalizeRange(idx, idx));
       setSelection(null);
@@ -58,30 +61,40 @@ export function useChartRangeSelection(dataLength: number) {
   const finalizeDrag = useCallback(() => {
     if (!dragging.current) return;
     dragging.current = false;
+    setIsDragging(false);
     anchorIndex.current = null;
-    if (dragRange.current) setSelection(dragRange.current);
+    const range = dragRange.current;
+    if (range && range.startIndex !== range.endIndex) {
+      setSelection(range);
+    }
     setDragRange(null);
   }, [setDragRange]);
 
-  const onMouseUp = useCallback(() => {
-    finalizeDrag();
-  }, [finalizeDrag]);
-
-  const onMouseLeave = useCallback(() => {
-    finalizeDrag();
-  }, [finalizeDrag]);
+  // Finalize when the user releases the mouse anywhere on the page — not just
+  // inside the chart. Recharts only fires onMouseUp when the release is inside
+  // its plot area, so dragging out then releasing would otherwise hang.
+  useEffect(() => {
+    if (!isDragging) return;
+    const handle = () => finalizeDrag();
+    window.addEventListener("mouseup", handle);
+    window.addEventListener("pointerup", handle);
+    return () => {
+      window.removeEventListener("mouseup", handle);
+      window.removeEventListener("pointerup", handle);
+    };
+  }, [isDragging, finalizeDrag]);
 
   const activeRange = drag ?? selection;
 
   return {
     selection,
     activeRange,
+    isDragging,
     clear,
     chartHandlers: {
       onMouseDown,
       onMouseMove,
-      onMouseUp,
-      onMouseLeave,
+      onMouseUp: finalizeDrag,
     },
   };
 }
@@ -126,7 +139,7 @@ export function ChartSelectionSummary({
 }) {
   const dirColor =
     delta.direction === "up"
-      ? "text-[var(--accent-green)]"
+      ? "text-[var(--accent)]"
       : delta.direction === "down"
         ? "text-[#FF6B6B]"
         : "text-[var(--text-muted)]";
@@ -137,31 +150,27 @@ export function ChartSelectionSummary({
   return (
     <div
       className={cn(
-        "flex items-center justify-between gap-2 rounded-lg border border-white/10 bg-black/50 px-2.5 py-2 backdrop-blur-sm",
+        "pointer-events-auto inline-flex max-w-full items-center gap-1.5 rounded-md border border-white/10 bg-black/70 px-2 py-1 text-[10px] leading-tight whitespace-nowrap backdrop-blur-sm",
         className
       )}
     >
-      <div className="min-w-0 text-[10px] leading-snug">
-        <p className="text-[var(--text-muted)] truncate">
-          {delta.startLabel} → {delta.endLabel}
-        </p>
-        <p className="mt-0.5 tabular-nums text-white">
-          <span className={dirColor}>
-            {arrow} {formatSelectionPercent(delta.percentChange)}
-          </span>
-          <span className="text-[var(--text-muted)]">
-            {" "}
-            · {formatValue(delta.startValue)} → {formatValue(delta.endValue)}{" "}
-            {valueLabel}
-          </span>
-        </p>
-      </div>
+      <span className={cn("tabular-nums font-medium", dirColor)}>
+        {arrow} {formatSelectionPercent(delta.percentChange)}
+      </span>
+      <span className="text-white/80 tabular-nums">
+        {formatValue(delta.startValue)} → {formatValue(delta.endValue)}
+        {valueLabel ? ` ${valueLabel}` : ""}
+      </span>
+      <span className="hidden sm:inline text-[var(--text-muted)]/80">
+        · {delta.startLabel} → {delta.endLabel}
+      </span>
       <button
         type="button"
         onClick={onClear}
-        className="shrink-0 text-[10px] font-medium text-[var(--text-muted)] hover:text-white"
+        aria-label="Clear selection"
+        className="ml-0.5 px-0.5 text-[var(--text-muted)] hover:text-white"
       >
-        Clear
+        ×
       </button>
     </div>
   );
@@ -182,7 +191,7 @@ export function SelectableChartFrame({
     referenceArea: React.ReactNode;
   }) => React.ReactNode;
 }) {
-  const { selection, activeRange, clear, chartHandlers } =
+  const { selection, activeRange, isDragging, clear, chartHandlers } =
     useChartRangeSelection(data.length);
 
   const dataKey = data.map((d) => d.id).join("|");
@@ -197,29 +206,27 @@ export function SelectableChartFrame({
   }, [data, selection]);
 
   return (
-    <div className="flex w-full flex-col">
-      <div className="chart-plot relative w-full">
-        {children({
-          chartHandlers,
-          activeRange,
-          referenceArea: (
-            <ChartReferenceArea data={data} range={activeRange} />
-          ),
-        })}
-        {!selection && (
-          <p className="pointer-events-none absolute bottom-1 left-0 right-0 text-center text-[9px] text-[var(--text-muted)]/80">
-            Drag on chart to compare a period
-          </p>
-        )}
-      </div>
+    <div
+      className={cn(
+        "chart-plot relative w-full",
+        isDragging && "select-none cursor-ew-resize [&_*]:!cursor-ew-resize"
+      )}
+      style={isDragging ? { WebkitUserSelect: "none", userSelect: "none" } : undefined}
+    >
+      {children({
+        chartHandlers,
+        activeRange,
+        referenceArea: <ChartReferenceArea data={data} range={activeRange} />,
+      })}
       {delta && (
-        <ChartSelectionSummary
-          delta={delta}
-          formatValue={formatValue}
-          valueLabel={valueLabel}
-          onClear={clear}
-          className="mt-2"
-        />
+        <div className="pointer-events-none absolute left-2 top-2 z-10 flex max-w-[calc(100%-1rem)]">
+          <ChartSelectionSummary
+            delta={delta}
+            formatValue={formatValue}
+            valueLabel={valueLabel}
+            onClear={clear}
+          />
+        </div>
       )}
     </div>
   );

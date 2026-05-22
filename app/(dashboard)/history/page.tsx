@@ -14,6 +14,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 import { CalendarDays } from "lucide-react";
 import Link from "next/link";
+import { HistoryListSkeleton } from "@/components/loading/page-skeletons";
 
 type ViewMode = "list" | "calendar";
 
@@ -30,7 +31,7 @@ const viewOptions = [
 ];
 
 export default function HistoryPage() {
-  const { dataset } = useDataset();
+  const { dataset, loading } = useDataset();
   const [view, setView] = useState<ViewMode>("list");
   const [range, setRange] = useState<TimeRange>("1y");
 
@@ -59,6 +60,10 @@ export default function HistoryPage() {
       };
     });
   }, [filteredSessions]);
+
+  if (loading) {
+    return <HistoryListSkeleton />;
+  }
 
   if (!dataset) {
     return (

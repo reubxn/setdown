@@ -10,16 +10,21 @@ import { SessionDetail } from "@/components/history/session-detail";
 import { BodyHeatmap } from "@/components/analytics/body-heatmap";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
+import { SessionDetailSkeleton } from "@/components/loading/page-skeletons";
 
 export default function SessionDetailPage() {
   const { sessionId } = useParams<{ sessionId: string }>();
-  const { dataset } = useDataset();
+  const { dataset, loading } = useDataset();
 
   const session = useMemo(() => {
     if (!dataset || !sessionId) return null;
     const decoded = decodeURIComponent(sessionId);
     return dataset.sessions.find((s) => s.id === decoded) ?? null;
   }, [dataset, sessionId]);
+
+  if (loading) {
+    return <SessionDetailSkeleton />;
+  }
 
   if (!dataset) {
     return (

@@ -24,6 +24,7 @@ import {
 import { computeStreaks } from "@/lib/derive/streaks";
 import { uploadCsvFile } from "@/lib/upload-orchestrator";
 import { parseStrongCsv } from "@/lib/parse-strong-csv";
+import { OverviewSkeleton } from "@/components/loading/page-skeletons";
 
 function OverviewEmptyState() {
   const { setDataset } = useDataset();
@@ -78,13 +79,7 @@ function OverviewEmptyState() {
 }
 
 function OverviewLoading() {
-  return (
-    <PageShell title="Overview">
-      <p className="p-8 text-center text-sm text-[var(--text-muted)]">
-        Loading…
-      </p>
-    </PageShell>
-  );
+  return <OverviewSkeleton />;
 }
 
 export default function OverviewPage() {
