@@ -6,6 +6,7 @@ import {
   mutation,
   query,
 } from "../_generated/server";
+import { rateLimiter } from "../rateLimits";
 
 const KIND = v.union(
   v.literal("overview"),
@@ -13,6 +14,78 @@ const KIND = v.union(
   v.literal("plateau"),
   v.literal("balance"),
   v.literal("streak"),
+);
+
+const MAX_TITLE_LEN = 200;
+const MAX_USER_MESSAGE_LEN = 10_000;
+const MAX_ASSISTANT_MESSAGE_LEN = 50_000;
+const MAX_DISPLAYS = 8;
+const DAILY_CHAT_LIMIT = 50;
+
+const exerciseChartDisplay = v.object({
+  kind: v.literal("exercise_chart"),
+  exercise: v.string(),
+  metric: v.union(v.literal("max_weight"), v.literal("estimated_1rm")),
+  windowWeeks: v.number(),
+  points: v.array(
+    v.object({
+      date: v.string(),
+      maxWeightKg: v.number(),
+      est1RMKg: v.number(),
+      volumeKg: v.number(),
+    }),
+  ),
+});
+
+const workoutPlanDisplay = v.object({
+  kind: v.literal("workout_plan"),
+  title: v.string(),
+  exercises: v.array(
+    v.object({
+      name: v.string(),
+      sets: v.number(),
+      reps: v.string(),
+      weight: v.optional(v.number()),
+      notes: v.optional(v.string()),
+    }),
+  ),
+  notes: v.optional(v.string()),
+});
+
+const statHighlightDisplay = v.object({
+  kind: v.literal("stat_highlight"),
+  label: v.string(),
+  value: v.string(),
+  unit: v.optional(v.string()),
+  delta: v.optional(
+    v.object({
+      value: v.string(),
+      direction: v.union(
+        v.literal("up"),
+        v.literal("down"),
+        v.literal("flat"),
+      ),
+    }),
+  ),
+  context: v.optional(v.string()),
+});
+
+const sessionListDisplay = v.object({
+  kind: v.literal("session_list"),
+  sessions: v.array(
+    v.object({
+      date: v.string(),
+      name: v.optional(v.string()),
+      topLifts: v.array(v.string()),
+    }),
+  ),
+});
+
+const displayValidator = v.union(
+  exerciseChartDisplay,
+  workoutPlanDisplay,
+  statHighlightDisplay,
+  sessionListDisplay,
 );
 
 export const listForVersion = internalQuery({
@@ -155,10 +228,15 @@ export const createThread = mutation({
   handler: async (ctx, { title }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
+    await rateLimiter.limit(ctx, "createThread", { key: userId, throws: true });
+    const trimmed = title?.trim() || "New chat";
+    if (trimmed.length > MAX_TITLE_LEN) {
+      throw new Error(`title exceeds ${MAX_TITLE_LEN} chars`);
+    }
     const now = Date.now();
     const id = await ctx.db.insert("chatThreads", {
       userId,
-      title: title?.trim() || "New chat",
+      title: trimmed,
       createdAt: now,
       lastMessageAt: now,
     });
@@ -171,9 +249,14 @@ export const renameThread = mutation({
   handler: async (ctx, { threadId, title }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
+    await rateLimiter.limit(ctx, "renameThread", { key: userId, throws: true });
+    const trimmed = title.trim() || "New chat";
+    if (trimmed.length > MAX_TITLE_LEN) {
+      throw new Error(`title exceeds ${MAX_TITLE_LEN} chars`);
+    }
     const thread = await ctx.db.get(threadId);
     if (!thread || thread.userId !== userId) throw new Error("Not found");
-    await ctx.db.patch(threadId, { title: title.trim() || "New chat" });
+    await ctx.db.patch(threadId, { title: trimmed });
   },
 });
 
@@ -182,6 +265,7 @@ export const deleteThread = mutation({
   handler: async (ctx, { threadId }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
+    await rateLimiter.limit(ctx, "deleteThread", { key: userId, throws: true });
     const thread = await ctx.db.get(threadId);
     if (!thread || thread.userId !== userId) throw new Error("Not found");
     const msgs = await ctx.db
@@ -199,7 +283,7 @@ export const chatUsageToday = query({
   args: {},
   handler: async (ctx) => {
     const userId = await getAuthUserId(ctx);
-    if (!userId) return { used: 0, limit: 50 };
+    if (!userId) return { used: 0, limit: DAILY_CHAT_LIMIT };
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
     const since = startOfDay.getTime();
@@ -210,7 +294,34 @@ export const chatUsageToday = query({
       )
       .collect();
     const userMsgs = rows.filter((r) => r.role === "user").length;
-    return { used: userMsgs, limit: 50 };
+    return { used: userMsgs, limit: DAILY_CHAT_LIMIT };
+  },
+});
+
+// Consumes one chatRequest token + verifies the user is under the daily cap.
+// Called by /api/chat before the Anthropic call so an unprivileged token loop
+// can't burn credits past the configured rate.
+export const reserveChatTurn = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const rows = await ctx.db
+      .query("chatMessages")
+      .withIndex("by_user_created", (q) =>
+        q.eq("userId", userId).gte("createdAt", startOfDay.getTime()),
+      )
+      .collect();
+    const used = rows.filter((r) => r.role === "user").length;
+    if (used >= DAILY_CHAT_LIMIT) {
+      throw new Error("daily_limit");
+    }
+
+    await rateLimiter.limit(ctx, "chatRequest", { key: userId, throws: true });
+    return { ok: true } as const;
   },
 });
 
@@ -220,11 +331,26 @@ export const recordChatTurn = mutation({
     userMessage: v.string(),
     assistantMessage: v.string(),
     pageContext: v.optional(v.string()),
-    displays: v.optional(v.array(v.any())),
+    displays: v.optional(v.array(displayValidator)),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
+
+    await rateLimiter.limit(ctx, "chatTurn", { key: userId, throws: true });
+
+    if (args.userMessage.length > MAX_USER_MESSAGE_LEN) {
+      throw new Error(`userMessage exceeds ${MAX_USER_MESSAGE_LEN} chars`);
+    }
+    if (args.assistantMessage.length > MAX_ASSISTANT_MESSAGE_LEN) {
+      throw new Error(
+        `assistantMessage exceeds ${MAX_ASSISTANT_MESSAGE_LEN} chars`,
+      );
+    }
+    if (args.displays && args.displays.length > MAX_DISPLAYS) {
+      throw new Error(`Too many displays (max ${MAX_DISPLAYS})`);
+    }
+
     const thread = await ctx.db.get(args.threadId);
     if (!thread || thread.userId !== userId) {
       throw new Error("Thread not found");

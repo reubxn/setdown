@@ -54,7 +54,7 @@ const markdownComponents: Components = {
     <a
       href={href}
       target="_blank"
-      rel="noreferrer"
+      rel="noopener noreferrer"
       className="break-all text-[var(--accent)] underline underline-offset-2 hover:opacity-80"
     >
       {children}

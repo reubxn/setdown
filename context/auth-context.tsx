@@ -13,6 +13,7 @@ import { useConvexAuth, useQuery } from "convex/react";
 import { convex } from "@/lib/convex-client";
 import { api } from "@/convex/_generated/api";
 import { migrateIndexedDbToConvex } from "@/lib/migrate-indexeddb-to-convex";
+import { clearDataset } from "@/lib/storage";
 
 export interface AuthUser {
   _id: string;
@@ -53,6 +54,8 @@ function AuthBridge({ children }: { children: ReactNode }) {
   }, [convexSignIn]);
 
   const signOut = useCallback(async () => {
+    // Drop local cached dataset so the next user on this device starts clean.
+    await clearDataset().catch(() => {});
     await convexSignOut();
   }, [convexSignOut]);
 

@@ -22,4 +22,13 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     period: HOUR,
     capacity: 20,
   },
+  // Gates an Anthropic API request via /api/chat. Consumed by reserveChatTurn
+  // before each LLM call so a stolen token can't burn credits faster than this.
+  chatRequest: { kind: "token bucket", rate: 30, period: HOUR, capacity: 60 },
+  // Storage for the persisted assistant turn. Independent of chatRequest so a
+  // direct caller bypassing the route still gets throttled.
+  chatTurn: { kind: "token bucket", rate: 60, period: HOUR, capacity: 60 },
+  createThread: { kind: "token bucket", rate: 30, period: HOUR, capacity: 30 },
+  renameThread: { kind: "token bucket", rate: 60, period: HOUR, capacity: 60 },
+  deleteThread: { kind: "token bucket", rate: 30, period: HOUR, capacity: 30 },
 });

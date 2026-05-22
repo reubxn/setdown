@@ -8,6 +8,8 @@ import { useDataset } from "@/context/dataset-context";
 import { LoginModal } from "@/components/auth/login-modal";
 import { cn } from "@/components/ui/utils";
 
+const MAX_FILE_BYTES = 10 * 1024 * 1024;
+
 export function Hero() {
   return (
     <section className="mx-auto grid w-full max-w-[1200px] gap-10 px-6 pt-16 pb-12 lg:grid-cols-2 lg:gap-16 lg:pt-24 lg:pb-20">
@@ -63,6 +65,10 @@ function HeroDropzone() {
       if (!file) return;
       if (!(file.name.endsWith(".csv") || file.type === "text/csv")) {
         setError("Please upload a CSV file.");
+        return;
+      }
+      if (file.size > MAX_FILE_BYTES) {
+        setError("File too large. Maximum size is 10 MB.");
         return;
       }
       processFile(file);

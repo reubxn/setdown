@@ -28,6 +28,8 @@ const iconSize: Record<DropzoneSize, string> = {
   lg: "h-10 w-10",
 };
 
+const MAX_FILE_BYTES = 10 * 1024 * 1024;
+
 function isCsv(file: File): boolean {
   return (
     file.name.toLowerCase().endsWith(".csv") ||
@@ -54,6 +56,10 @@ export function Dropzone({
       if (!file) return;
       if (!isCsv(file)) {
         setLocalError("Please choose a CSV file.");
+        return;
+      }
+      if (file.size > MAX_FILE_BYTES) {
+        setLocalError("File too large. Maximum size is 10 MB.");
         return;
       }
       setLocalError(null);
