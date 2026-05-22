@@ -1,8 +1,12 @@
 "use client";
 
+import { Dumbbell } from "lucide-react";
+import Link from "next/link";
 import { useDataset } from "@/context/dataset-context";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExerciseList } from "@/components/exercises/exercise-list";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Button } from "@/components/ui/button";
 
 export default function ExercisesPage() {
   const { dataset, loading } = useDataset();
@@ -17,13 +21,17 @@ export default function ExercisesPage() {
 
   if (!dataset) {
     return (
-      <PageShell
-        title="Exercises"
-        subtitle="Upload a Strong export to see your exercises."
-      >
-        <div className="rounded-[var(--radius-md)] border border-dashed border-[var(--border-subtle)] p-8 text-center text-sm text-[var(--text-muted)]">
-          No dataset loaded.
-        </div>
+      <PageShell title="Exercises">
+        <EmptyState
+          icon={Dumbbell}
+          title="No exercises yet"
+          description="Upload your Strong export to see every exercise you've trained, with 1RM curves and set history."
+          action={
+            <Link href="/overview">
+              <Button variant="primary">Get started</Button>
+            </Link>
+          }
+        />
       </PageShell>
     );
   }

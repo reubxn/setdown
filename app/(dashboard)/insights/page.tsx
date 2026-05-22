@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Sparkles } from "lucide-react";
 import { useDataset } from "@/context/dataset-context";
 import { useAuth } from "@/context/auth-context";
@@ -8,6 +9,8 @@ import { BodyHeatmap } from "@/components/analytics/body-heatmap";
 import { StreakCard } from "@/components/analytics/streak-card";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Button } from "@/components/ui/button";
 
 export default function InsightsPage() {
   const { dataset, loading } = useDataset();
@@ -27,14 +30,16 @@ export default function InsightsPage() {
       {loading ? (
         <p className="text-sm text-[var(--text-muted)]">Loading…</p>
       ) : !dataset ? (
-        <Card>
-          <CardHeader title="No data yet" />
-          <CardBody>
-            <p className="text-sm text-[var(--text-secondary)]">
-              Drop a Strong CSV export on the home page to see your insights.
-            </p>
-          </CardBody>
-        </Card>
+        <EmptyState
+          icon={Sparkles}
+          title="No insights yet"
+          description="Upload a workout to generate insights about muscle balance, streaks, and trends."
+          action={
+            <Link href="/overview">
+              <Button variant="primary">Get started</Button>
+            </Link>
+          }
+        />
       ) : (
         <div className="grid gap-4 @lg:grid-cols-2">
           <BodyHeatmap dataset={dataset} />

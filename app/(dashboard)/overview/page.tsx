@@ -1,13 +1,14 @@
 "use client";
 
-import { useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { format, isWithinInterval, startOfMonth, endOfMonth } from "date-fns";
-import Link from "next/link";
-import { Upload } from "lucide-react";
+import { BarChart3 } from "lucide-react";
 import { useDataset } from "@/context/dataset-context";
+import { useAuth } from "@/context/auth-context";
 import { PageShell } from "@/components/layout/page-shell";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Dropzone } from "@/components/upload/dropzone";
 import { KpiRow, type KpiItem } from "@/components/dashboard/kpi-row";
 import { VolumeCard } from "@/components/dashboard/volume-card";
 import { FrequencyCalendar } from "@/components/dashboard/frequency-calendar";
@@ -20,26 +21,57 @@ import {
   overviewStats,
 } from "@/lib/metrics";
 import { computeStreaks } from "@/lib/derive/streaks";
+import { uploadCsvFile } from "@/lib/upload-orchestrator";
+import { parseStrongCsv } from "@/lib/parse-strong-csv";
 
-function EmptyState() {
+function OverviewEmptyState() {
+  const { setDataset } = useDataset();
+  const { isAuthenticated } = useAuth();
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const onFile = useCallback(
+    async (file: File) => {
+      setError(null);
+      setBusy(true);
+      try {
+        if (isAuthenticated) {
+          const { dataset } = await uploadCsvFile(file, {
+            isAuthenticated: true,
+          });
+          await setDataset(dataset);
+        } else {
+          const text = await file.text();
+          const result = parseStrongCsv(text, file.name);
+          if ("error" in result) {
+            setError(result.error);
+            return;
+          }
+          await setDataset(result.dataset);
+        }
+        router.push("/overview");
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Upload failed.");
+      } finally {
+        setBusy(false);
+      }
+    },
+    [isAuthenticated, router, setDataset],
+  );
+
   return (
     <PageShell title="Overview">
-      <Card padding="lg" className="mx-auto max-w-xl text-center">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[var(--bg-sunken)] text-[var(--accent)]">
-          <Upload className="h-5 w-5" aria-hidden />
-        </div>
-        <h2 className="mt-4 text-lg font-semibold text-[var(--text-primary)]">
-          No workouts yet
-        </h2>
-        <p className="mt-1 text-sm text-[var(--text-muted)]">
-          Drop your Strong export to see volume, frequency, and PRs.
-        </p>
-        <div className="mt-5">
-          <Link href="/upload">
-            <Button variant="primary">Upload CSV</Button>
-          </Link>
-        </div>
-      </Card>
+      <EmptyState
+        icon={BarChart3}
+        title="No data yet"
+        description="Drop your Strong export to see volume, frequency, and PRs."
+      >
+        <Dropzone size="md" onFileSelected={onFile} disabled={busy} />
+        {error ? (
+          <p className="mt-3 text-sm text-[var(--danger)]">{error}</p>
+        ) : null}
+      </EmptyState>
     </PageShell>
   );
 }
@@ -111,7 +143,7 @@ export default function OverviewPage() {
   }, [dataset]);
 
   if (loading) return <OverviewLoading />;
-  if (!dataset || !kpis) return <EmptyState />;
+  if (!dataset || !kpis) return <OverviewEmptyState />;
 
   return (
     <PageShell
