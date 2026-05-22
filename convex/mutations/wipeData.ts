@@ -41,12 +41,6 @@ export default mutation({
       .collect();
     for (const t of threads) await ctx.db.delete(t._id);
 
-    const measurements = await ctx.db
-      .query("bodyMeasurements")
-      .withIndex("by_user_date", (q) => q.eq("userId", userId))
-      .collect();
-    for (const m of measurements) await ctx.db.delete(m._id);
-
     return { ok: true };
   },
 });

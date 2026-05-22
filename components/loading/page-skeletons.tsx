@@ -207,30 +207,6 @@ export function InsightsSkeleton() {
   );
 }
 
-export function BodySkeleton() {
-  return (
-    <div className="@container mx-auto w-full max-w-5xl px-4 py-6">
-      <div className="mb-6 space-y-2">
-        <Skeleton className="h-7 w-24" />
-        <Skeleton className="h-4 w-72" />
-      </div>
-      <Card padding="md">
-        <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="space-y-2">
-                <Skeleton className="h-3 w-16" />
-                <Skeleton className="h-9 w-full" />
-              </div>
-            ))}
-          </div>
-          <Skeleton className="h-64 w-full" />
-        </div>
-      </Card>
-    </div>
-  );
-}
-
 export function ChatHistorySkeleton() {
   return (
     <div className="space-y-3" aria-label="Loading chat history">

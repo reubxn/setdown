@@ -9,7 +9,6 @@ import {
   LayoutDashboard,
   Settings,
   Sparkles,
-  User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/auth-context";
@@ -27,7 +26,6 @@ const baseNav: NavItem[] = [
   { href: "/overview", label: "Overview", icon: LayoutDashboard },
   { href: "/exercises", label: "Exercises", icon: Dumbbell },
   { href: "/history", label: "History", icon: History },
-  { href: "/body", label: "Body", icon: User, authOnly: true },
   { href: "/insights", label: "Insights", icon: BarChart3, authOnly: true },
   { href: "/coach", label: "Coach", icon: Sparkles },
   { href: "/settings", label: "Settings", icon: Settings },

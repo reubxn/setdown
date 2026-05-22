@@ -7,7 +7,6 @@ import {
   TOOL_DEFINITIONS,
   rehydrateDataset,
   runTool,
-  type BodyMeasurement,
   type SerializedWorkoutDataset,
 } from "@/lib/ai/tools";
 import type { ChatDisplay } from "@/lib/ai/display";
@@ -136,21 +135,6 @@ export async function POST(request: Request) {
     { limit: 20, threadId: typedThreadId },
   );
 
-  const bodyMeasurementsRaw = (await convex
-    .query(api.queries.getBodyMeasurements.default, {})
-    .catch(() => [])) as Array<{
-    date: number;
-    weightKg: number | null;
-    bodyFatPct: number | null;
-    measurements: Record<string, number>;
-  }>;
-  const bodyMeasurements: BodyMeasurement[] = bodyMeasurementsRaw.map((m) => ({
-    date: m.date,
-    weightKg: m.weightKg,
-    bodyFatPct: m.bodyFatPct,
-    measurements: m.measurements ?? {},
-  }));
-
   const dataset = rehydrateDataset(serializedDataset);
 
   // Truncate stored message content before re-feeding into the model so a
@@ -270,7 +254,6 @@ export async function POST(request: Request) {
               try {
                 const result = runTool(use.name, use.input, {
                   dataset,
-                  bodyMeasurements,
                 });
                 if (result.display) {
                   collectedDisplays.push(result.display);
