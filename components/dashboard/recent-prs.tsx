@@ -6,6 +6,7 @@ import { Trophy } from "lucide-react";
 import { Card, CardHeader } from "@/components/ui/card";
 import { detectPRs } from "@/lib/metrics";
 import type { WorkoutDataset } from "@/lib/types";
+import { usePreferences } from "@/context/preferences-context";
 
 export function RecentPRs({
   dataset,
@@ -15,6 +16,7 @@ export function RecentPRs({
   limit?: number;
 }) {
   const prs = useMemo(() => detectPRs(dataset, limit), [dataset, limit]);
+  const { prefs } = usePreferences();
 
   return (
     <Card padding="lg" className="@container h-full">
@@ -46,7 +48,7 @@ export function RecentPRs({
               </div>
               <div className="shrink-0 text-right">
                 <p className="text-sm font-semibold tabular-nums text-[var(--accent)]">
-                  {pr.value} kg
+                  {pr.value} {prefs.units}
                 </p>
                 <p className="text-[11px] text-[var(--text-muted)]">
                   {format(pr.date, "MMM d")}

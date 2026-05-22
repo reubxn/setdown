@@ -10,6 +10,7 @@ import {
   computeMuscleBalance,
   type BalanceWarning,
 } from "@/lib/derive/muscle-balance";
+import { usePreferences } from "@/context/preferences-context";
 
 function WarningRow({ w }: { w: BalanceWarning }) {
   const Icon = w.severity === "warn" ? AlertTriangle : Info;
@@ -34,6 +35,7 @@ export function MuscleBalance({
 }) {
   const balance = computeMuscleBalance(dataset, windowWeeks);
   const max = Math.max(...balance.buckets.map((b) => b.volume), 1);
+  const { prefs } = usePreferences();
 
   if (balance.totalVolume === 0) {
     return (
@@ -63,7 +65,7 @@ export function MuscleBalance({
                   {BUCKET_LABELS[b.bucket]}
                 </span>
                 <span className="text-[var(--text-muted)] tabular-nums">
-                  {formatVolume(b.volume)} kg·reps · {b.percent.toFixed(0)}%
+                  {formatVolume(b.volume)} {prefs.units}·reps · {b.percent.toFixed(0)}%
                 </span>
               </div>
               <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--bg-sunken)]">

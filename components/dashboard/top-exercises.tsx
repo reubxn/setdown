@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { Card, CardHeader } from "@/components/ui/card";
 import { topExercisesByVolume, formatVolume } from "@/lib/metrics";
 import type { WorkoutDataset } from "@/lib/types";
+import { usePreferences } from "@/context/preferences-context";
 
 export function TopExercises({
   dataset,
@@ -18,6 +19,7 @@ export function TopExercises({
     () => topExercisesByVolume(dataset, weeks, limit),
     [dataset, weeks, limit]
   );
+  const { prefs } = usePreferences();
 
   const max = items[0]?.volume ?? 0;
 
@@ -42,7 +44,7 @@ export function TopExercises({
                     {ex.name}
                   </span>
                   <span className="shrink-0 text-xs tabular-nums text-[var(--text-muted)]">
-                    {formatVolume(ex.volume)} kg
+                    {formatVolume(ex.volume)} {prefs.units}
                   </span>
                 </div>
                 <div

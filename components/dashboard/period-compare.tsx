@@ -11,6 +11,7 @@ import {
 } from "@/lib/derive/period-compare";
 import { formatDuration, formatVolume } from "@/lib/metrics";
 import type { WorkoutDataset } from "@/lib/types";
+import { usePreferences } from "@/context/preferences-context";
 
 const PERIOD_OPTIONS: { value: ComparePeriod; label: string }[] = [
   { value: "week", label: "Week" },
@@ -37,7 +38,11 @@ function deltaFor(percent: number): MetricDelta {
 
 export function PeriodCompareCard({ dataset }: { dataset: WorkoutDataset }) {
   const [period, setPeriod] = useState<ComparePeriod>("month");
-  const compare = useMemo(() => periodCompare(dataset, period), [dataset, period]);
+  const { prefs, weekStartsOn } = usePreferences();
+  const compare = useMemo(
+    () => periodCompare(dataset, period, { weekStartsOn }),
+    [dataset, period, weekStartsOn],
+  );
   const labels = comparePeriodLabel(period);
 
   return (
@@ -65,7 +70,7 @@ export function PeriodCompareCard({ dataset }: { dataset: WorkoutDataset }) {
         <Metric
           label="Volume"
           value={formatVolume(compare.current.totalVolume)}
-          unit="kg"
+          unit={prefs.units}
           delta={deltaFor(compare.delta.volumePercent)}
           hint={`vs ${formatVolume(compare.previous.totalVolume)}`}
         />

@@ -6,6 +6,8 @@ import { format, isWithinInterval, startOfMonth, endOfMonth } from "date-fns";
 import { BarChart3 } from "lucide-react";
 import { useDataset } from "@/context/dataset-context";
 import { useAuth } from "@/context/auth-context";
+import { usePreferences } from "@/context/preferences-context";
+import { UploadUnitsPrompt } from "@/components/upload/upload-units-prompt";
 import { PageShell } from "@/components/layout/page-shell";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Dropzone } from "@/components/upload/dropzone";
@@ -29,11 +31,13 @@ import { OverviewSkeleton } from "@/components/loading/page-skeletons";
 function OverviewEmptyState() {
   const { setDataset } = useDataset();
   const { isAuthenticated } = useAuth();
+  const { prefs, setUnits } = usePreferences();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
 
-  const onFile = useCallback(
+  const doUpload = useCallback(
     async (file: File) => {
       setError(null);
       setBusy(true);
@@ -62,6 +66,17 @@ function OverviewEmptyState() {
     [isAuthenticated, router, setDataset],
   );
 
+  const onFile = useCallback(
+    (file: File) => {
+      if (!prefs.explicitlySet) {
+        setPendingFile(file);
+        return;
+      }
+      void doUpload(file);
+    },
+    [doUpload, prefs.explicitlySet],
+  );
+
   return (
     <PageShell title="Overview">
       <EmptyState
@@ -74,6 +89,15 @@ function OverviewEmptyState() {
           <p className="mt-3 text-sm text-[var(--danger)]">{error}</p>
         ) : null}
       </EmptyState>
+      <UploadUnitsPrompt
+        open={pendingFile !== null}
+        onConfirm={(u) => {
+          setUnits(u);
+          const file = pendingFile;
+          setPendingFile(null);
+          if (file) void doUpload(file);
+        }}
+      />
     </PageShell>
   );
 }
@@ -84,11 +108,12 @@ function OverviewLoading() {
 
 export default function OverviewPage() {
   const { dataset, loading } = useDataset();
+  const { prefs, weekStartsOn } = usePreferences();
 
   const kpis = useMemo<KpiItem[] | null>(() => {
     if (!dataset) return null;
     const stats = overviewStats(dataset);
-    const streaks = computeStreaks(dataset);
+    const streaks = computeStreaks(dataset, { weekStartsOn });
 
     const monthStart = startOfMonth(dataset.dateRange.end);
     const monthEnd = endOfMonth(dataset.dateRange.end);
@@ -112,7 +137,7 @@ export default function OverviewPage() {
       {
         label: "Volume (4w)",
         value: formatVolume(stats.volumeLast4Weeks),
-        unit: "kg",
+        unit: prefs.units,
         delta:
           stats.volumePrior4Weeks > 0
             ? {
@@ -136,7 +161,7 @@ export default function OverviewPage() {
         hint: format(dataset.dateRange.end, "MMM yyyy"),
       },
     ];
-  }, [dataset]);
+  }, [dataset, prefs.units, weekStartsOn]);
 
   if (loading) return <OverviewLoading />;
   if (!dataset || !kpis) return <OverviewEmptyState />;

@@ -8,6 +8,7 @@ import { volumeTimeSeries } from "@/lib/chart-series";
 import { formatVolume } from "@/lib/metrics";
 import type { TimeRange } from "@/lib/time-range";
 import type { WorkoutDataset } from "@/lib/types";
+import { usePreferences } from "@/context/preferences-context";
 
 const RANGE_OPTIONS: { value: TimeRange; label: string }[] = [
   { value: "1w", label: "1W" },
@@ -18,7 +19,11 @@ const RANGE_OPTIONS: { value: TimeRange; label: string }[] = [
 
 export function VolumeCard({ dataset }: { dataset: WorkoutDataset }) {
   const [range, setRange] = useState<TimeRange>("1m");
-  const data = useMemo(() => volumeTimeSeries(dataset, range), [dataset, range]);
+  const { prefs, weekStartsOn } = usePreferences();
+  const data = useMemo(
+    () => volumeTimeSeries(dataset, range, { weekStartsOn }),
+    [dataset, range, weekStartsOn],
+  );
   const total = useMemo(
     () => data.reduce((sum, p) => sum + p.value, 0),
     [data]
@@ -29,7 +34,7 @@ export function VolumeCard({ dataset }: { dataset: WorkoutDataset }) {
     <Card padding="lg" className="@container">
       <CardHeader
         title="Training volume"
-        subtitle={hasData ? `${formatVolume(total)} kg total` : "No data in range"}
+        subtitle={hasData ? `${formatVolume(total)} ${prefs.units} total` : "No data in range"}
         action={
           <SegmentedControl
             size="sm"

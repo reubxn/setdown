@@ -5,8 +5,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Dropzone } from "@/components/upload/dropzone";
 import { UploadProgress } from "@/components/upload/upload-progress";
 import { UploadConfirmReplace } from "@/components/upload/upload-confirm-replace";
+import { UploadUnitsPrompt } from "@/components/upload/upload-units-prompt";
 import { useDataset } from "@/context/dataset-context";
 import { useAuth } from "@/context/auth-context";
+import { usePreferences, type Units } from "@/context/preferences-context";
 import {
   uploadCsvFile,
   type UploadProgress as UploadProgressState,
@@ -18,8 +20,10 @@ function UploadPageInner() {
   const isReplace = searchParams.get("replace") === "1";
   const { dataset, refresh } = useDataset();
   const { isAuthenticated } = useAuth();
+  const { prefs, setUnits } = usePreferences();
 
   const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [unitsPromptFile, setUnitsPromptFile] = useState<File | null>(null);
   const [progress, setProgress] = useState<UploadProgressState>({
     stage: "idle",
   });
@@ -43,6 +47,17 @@ function UploadPageInner() {
     [isAuthenticated, refresh, router],
   );
 
+  const proceed = useCallback(
+    (file: File) => {
+      if (!prefs.explicitlySet) {
+        setUnitsPromptFile(file);
+        return;
+      }
+      void runUpload(file);
+    },
+    [prefs.explicitlySet, runUpload],
+  );
+
   const onFileSelected = useCallback(
     (file: File) => {
       const hasExisting = isReplace || dataset !== null;
@@ -50,9 +65,19 @@ function UploadPageInner() {
         setPendingFile(file);
         return;
       }
-      void runUpload(file);
+      proceed(file);
     },
-    [dataset, isReplace, runUpload],
+    [dataset, isReplace, proceed],
+  );
+
+  const onUnitsConfirmed = useCallback(
+    (units: Units) => {
+      setUnits(units);
+      const file = unitsPromptFile;
+      setUnitsPromptFile(null);
+      if (file) void runUpload(file);
+    },
+    [runUpload, setUnits, unitsPromptFile],
   );
 
   const showProgress =
@@ -91,8 +116,13 @@ function UploadPageInner() {
         onConfirm={() => {
           const file = pendingFile;
           setPendingFile(null);
-          if (file) void runUpload(file);
+          if (file) proceed(file);
         }}
+      />
+
+      <UploadUnitsPrompt
+        open={unitsPromptFile !== null}
+        onConfirm={onUnitsConfirmed}
       />
     </div>
   );

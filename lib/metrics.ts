@@ -43,14 +43,16 @@ export function totalVolume(sessions: WorkoutSession[]): number {
 
 export function weeklyVolumeSeries(
   dataset: WorkoutDataset,
-  weeks = 16
+  weeks = 16,
+  opts: { weekStartsOn?: 0 | 1 } = {}
 ): { week: string; volume: number }[] {
+  const weekStartsOn = opts.weekStartsOn ?? 1;
   const end = dataset.dateRange.end;
   const series: { week: string; volume: number }[] = [];
 
   for (let i = weeks - 1; i >= 0; i--) {
-    const weekEnd = endOfWeek(subWeeks(end, i), { weekStartsOn: 1 });
-    const weekStart = startOfWeek(subWeeks(end, i), { weekStartsOn: 1 });
+    const weekEnd = endOfWeek(subWeeks(end, i), { weekStartsOn });
+    const weekStart = startOfWeek(subWeeks(end, i), { weekStartsOn });
     const vol = totalVolume(
       sessionsInRange(dataset.sessions, weekStart, weekEnd)
     );

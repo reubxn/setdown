@@ -5,6 +5,7 @@ import { differenceInCalendarDays, endOfWeek, startOfWeek } from "date-fns";
 import { Flame } from "lucide-react";
 import type { WorkoutDataset } from "@/lib/types";
 import { Card, CardHeader, CardBody } from "@/components/ui/card";
+import { usePreferences } from "@/context/preferences-context";
 
 interface StreakStats {
   currentWeeks: number;
@@ -13,12 +14,15 @@ interface StreakStats {
   lastWorkoutDays: number | null;
 }
 
-function weekKey(d: Date): string {
-  const ws = startOfWeek(d, { weekStartsOn: 1 });
+function weekKey(d: Date, weekStartsOn: 0 | 1): string {
+  const ws = startOfWeek(d, { weekStartsOn });
   return `${ws.getFullYear()}-${ws.getMonth()}-${ws.getDate()}`;
 }
 
-function computeStreaks(dataset: WorkoutDataset): StreakStats {
+function computeStreaks(
+  dataset: WorkoutDataset,
+  weekStartsOn: 0 | 1,
+): StreakStats {
   if (dataset.sessions.length === 0) {
     return {
       currentWeeks: 0,
@@ -29,7 +33,7 @@ function computeStreaks(dataset: WorkoutDataset): StreakStats {
   }
 
   const activeWeeks = new Set<string>();
-  for (const s of dataset.sessions) activeWeeks.add(weekKey(s.date));
+  for (const s of dataset.sessions) activeWeeks.add(weekKey(s.date, weekStartsOn));
 
   const sortedKeys = Array.from(activeWeeks)
     .map((k) => {
@@ -53,7 +57,7 @@ function computeStreaks(dataset: WorkoutDataset): StreakStats {
   // current streak: consecutive weeks ending at the most recent active week
   // that is within one week of "today" (dataset.dateRange.end).
   const today = dataset.dateRange.end;
-  const thisWeek = startOfWeek(today, { weekStartsOn: 1 });
+  const thisWeek = startOfWeek(today, { weekStartsOn });
   const lastActive = sortedKeys[sortedKeys.length - 1];
   let current = 0;
   if (differenceInCalendarDays(thisWeek, lastActive) <= 7) {
@@ -95,11 +99,12 @@ function StatBlock({ label, value, unit }: { label: string; value: number | stri
 }
 
 export function StreakCard({ dataset }: { dataset: WorkoutDataset }) {
-  const stats = computeStreaks(dataset);
+  const { weekStartsOn } = usePreferences();
+  const stats = computeStreaks(dataset, weekStartsOn);
   const onStreak = stats.currentWeeks > 0;
 
-  const weekStart = startOfWeek(dataset.dateRange.end, { weekStartsOn: 1 });
-  const weekEnd = endOfWeek(dataset.dateRange.end, { weekStartsOn: 1 });
+  const weekStart = startOfWeek(dataset.dateRange.end, { weekStartsOn });
+  const weekEnd = endOfWeek(dataset.dateRange.end, { weekStartsOn });
   const sessionsThisWeek = dataset.sessions.filter(
     (s) => s.date >= weekStart && s.date <= weekEnd,
   ).length;

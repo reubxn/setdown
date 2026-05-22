@@ -14,6 +14,7 @@ import {
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/context/auth-context";
+import { usePreferences } from "@/context/preferences-context";
 import { Card, CardHeader, CardBody } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { colors } from "@/lib/design-tokens";
@@ -40,6 +41,7 @@ function todayIso(): string {
 
 export function BodyLog() {
   const { isAuthenticated } = useAuth();
+  const { prefs } = usePreferences();
   const measurements = useQuery(
     api.queries.getBodyMeasurements.default,
     isAuthenticated ? {} : "skip",
@@ -119,7 +121,7 @@ export function BodyLog() {
           <form onSubmit={handleSubmit} className="flex flex-col gap-3 text-sm">
             <Field label="Date" type="date" value={date} onChange={setDate} />
             <Field
-              label="Weight (kg)"
+              label={`Weight (${prefs.units})`}
               type="number"
               step="0.1"
               value={weight}
@@ -189,7 +191,7 @@ export function BodyLog() {
                   />
                   <Tooltip
                     contentStyle={tooltipStyle}
-                    formatter={(v: number) => [`${v.toFixed(1)} kg`, "Weight"]}
+                    formatter={(v: number) => [`${v.toFixed(1)} ${prefs.units}`, "Weight"]}
                   />
                   <Line
                     type="monotone"

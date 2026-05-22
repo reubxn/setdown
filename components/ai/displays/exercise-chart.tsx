@@ -13,6 +13,7 @@ import {
 import { format } from "date-fns";
 import type { ChatDisplay } from "@/lib/ai/display";
 import { DisplayPlaceholder } from "./placeholder";
+import { usePreferences } from "@/context/preferences-context";
 
 type ExerciseChartProps = Extract<ChatDisplay, { kind: "exercise_chart" }>;
 
@@ -30,6 +31,7 @@ export function ExerciseChartDisplay({
   windowWeeks,
   points,
 }: ExerciseChartProps) {
+  const { prefs } = usePreferences();
   if (!points || points.length === 0) {
     return (
       <DisplayPlaceholder>
@@ -80,7 +82,7 @@ export function ExerciseChartDisplay({
               labelFormatter={(iso: string) =>
                 format(new Date(iso), "MMM d, yyyy")
               }
-              formatter={(v: number) => [`${v.toFixed(1)} kg`, label]}
+              formatter={(v: number) => [`${v.toFixed(1)} ${prefs.units}`, label]}
             />
             <Line
               type="monotone"
