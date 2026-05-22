@@ -29,7 +29,7 @@ const baseNav: NavItem[] = [
   { href: "/history", label: "History", icon: History },
   { href: "/body", label: "Body", icon: User, authOnly: true },
   { href: "/insights", label: "Insights", icon: BarChart3, authOnly: true },
-  { href: "/coach", label: "Coach", icon: Sparkles, authOnly: true },
+  { href: "/coach", label: "Coach", icon: Sparkles },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
