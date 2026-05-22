@@ -1,12 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Github } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useDataset } from "@/context/dataset-context";
 import { SignInButton } from "@/components/auth/sign-in-button";
 import { Hero } from "@/components/landing/hero";
-import { FeatureGrid } from "@/components/landing/feature-grid";
-import { ScreenshotStrip } from "@/components/landing/screenshot-strip";
 import { PrivacyNote } from "@/components/landing/privacy-note";
 
 export default function HomePage() {
@@ -39,24 +37,7 @@ export default function HomePage() {
       )}
 
       <Hero />
-      <FeatureGrid />
-      <ScreenshotStrip />
       <PrivacyNote />
-
-      <footer className="border-t border-[var(--border-subtle)] mt-8">
-        <div className="mx-auto flex w-full max-w-[1200px] flex-col items-start justify-between gap-4 px-6 py-8 text-sm text-[var(--text-muted)] sm:flex-row sm:items-center">
-          <p>setdown — your Strong data, in your hands.</p>
-          <a
-            href="https://github.com/reubxn/setdown"
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-1.5 hover:text-[var(--text-primary)]"
-          >
-            <Github className="h-4 w-4" />
-            GitHub
-          </a>
-        </div>
-      </footer>
     </main>
   );
 }
