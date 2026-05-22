@@ -27,9 +27,9 @@
   --text-muted: #7d8b9a;
 
   /* accent — sport blue */
-  --accent: #1d4ed8;
-  --accent-hover: #1e40af;
-  --accent-muted: rgba(29, 78, 216, 0.16);
+  --accent: #38bdf8;
+  --accent-hover: #0ea5e9;
+  --accent-muted: rgba(56, 189, 248, 0.16);
 
   /* semantic */
   --danger: #ff4d4f;

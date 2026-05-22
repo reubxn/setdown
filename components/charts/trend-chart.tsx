@@ -219,9 +219,9 @@ export function DurationLineChart({ data }: { data: ChartPoint[] }) {
             <Line
               type="monotone"
               dataKey="value"
-              stroke="#1d4ed8"
+              stroke="#38bdf8"
               strokeWidth={2}
-              dot={{ fill: "#1d4ed8", r: 3 }}
+              dot={{ fill: "#38bdf8", r: 3 }}
             />
           </LineChart>
         </ResponsiveContainer>

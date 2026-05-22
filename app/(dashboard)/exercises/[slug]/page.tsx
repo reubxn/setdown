@@ -204,7 +204,7 @@ export default function ExerciseDetailPage() {
                   data={volumeChartData}
                   dataKey="volume"
                   label="kg·reps"
-                  color="#1d4ed8"
+                  color="#38bdf8"
                 />
               </div>
             ) : (
