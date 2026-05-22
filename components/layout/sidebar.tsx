@@ -43,7 +43,7 @@ export function Sidebar() {
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col border-r border-[var(--border-subtle)] bg-[var(--bg-elevated)] lg:flex">
       <div className="border-b border-[var(--border-subtle)] px-5 py-5">
         <Link href="/" className="block">
-          <span className="text-lg font-bold tracking-tight text-[var(--text-primary)]">
+          <span className="font-display text-2xl text-[var(--text-primary)]">
             setdown
           </span>
         </Link>

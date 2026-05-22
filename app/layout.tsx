@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Geist, Bebas_Neue } from "next/font/google";
 import { DatasetProvider } from "@/context/dataset-context";
 import { AuthProvider } from "@/context/auth-context";
 import "./globals.css";
@@ -7,6 +7,12 @@ import "./globals.css";
 const geist = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+});
+
+const bebas = Bebas_Neue({
+  variable: "--font-bebas",
+  subsets: ["latin"],
+  weight: "400",
 });
 
 export const metadata: Metadata = {
@@ -21,7 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className={`${geist.variable} antialiased`}>
+      <body className={`${geist.variable} ${bebas.variable} antialiased`}>
         <AuthProvider>
           <DatasetProvider>{children}</DatasetProvider>
         </AuthProvider>

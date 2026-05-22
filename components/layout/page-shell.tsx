@@ -23,7 +23,7 @@ export function PageShell({
         <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <div>
             {title && (
-              <h1 className="text-2xl font-bold tracking-tight lg:text-3xl">
+              <h1 className="font-display text-3xl lg:text-4xl">
                 {title}
               </h1>
             )}

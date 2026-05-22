@@ -102,9 +102,9 @@ export function VolumeAreaChart({
               tick={{ fill: "#7D8B9A", fontSize: 10 }}
               axisLine={false}
               tickLine={false}
-              width={36}
+              width={40}
               tickFormatter={(v) =>
-                v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)
+                v >= 1000 ? `${(v / 1000).toFixed(1).replace(/\.0$/, "")}k` : String(v)
               }
             />
             <Tooltip
@@ -219,9 +219,9 @@ export function DurationLineChart({ data }: { data: ChartPoint[] }) {
             <Line
               type="monotone"
               dataKey="value"
-              stroke="#1d4ed8"
+              stroke="#00C2FF"
               strokeWidth={2}
-              dot={{ fill: "#1d4ed8", r: 3 }}
+              dot={{ fill: "#00C2FF", r: 3 }}
             />
           </LineChart>
         </ResponsiveContainer>

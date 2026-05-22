@@ -22,12 +22,12 @@ export function EmptyStateCard({
       onDrop={onDrop}
       className={`rounded-2xl border-2 border-dashed p-10 text-center transition-colors ${
         dragging
-          ? "border-[var(--accent-blue)] bg-[var(--accent-blue)]/5"
+          ? "border-[var(--accent)] bg-[var(--accent)]/5"
           : "border-white/20 bg-[var(--card)]"
       }`}
     >
       <Upload
-        className="mx-auto mb-4 h-10 w-10 text-[var(--accent-blue)]"
+        className="mx-auto mb-4 h-10 w-10 text-[var(--accent)]"
         strokeWidth={1.5}
       />
       <h2 className="text-lg font-semibold text-white">Drop your export</h2>
