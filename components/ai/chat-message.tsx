@@ -4,11 +4,14 @@
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { cn } from "@/components/ui/utils";
+import type { ChatDisplay } from "@/lib/ai/display";
+import { ChatDisplays } from "./displays";
 
 export interface ChatMessageProps {
   role: "user" | "assistant";
   content: string;
   pending?: boolean;
+  displays?: ChatDisplay[];
 }
 
 const markdownComponents: Components = {
@@ -96,7 +99,12 @@ const markdownComponents: Components = {
   hr: () => <hr className="my-3 border-[var(--border-subtle)]" />,
 };
 
-export function ChatMessage({ role, content, pending }: ChatMessageProps) {
+export function ChatMessage({
+  role,
+  content,
+  pending,
+  displays,
+}: ChatMessageProps) {
   if (role === "user") {
     return (
       <div className="ml-auto max-w-[85%] whitespace-pre-wrap rounded-2xl bg-[var(--bg-elevated)] px-4 py-2.5 text-sm text-[var(--text-primary)]">
@@ -104,6 +112,7 @@ export function ChatMessage({ role, content, pending }: ChatMessageProps) {
       </div>
     );
   }
+  const hasDisplays = displays && displays.length > 0;
   return (
     <div
       className={cn(
@@ -114,9 +123,10 @@ export function ChatMessage({ role, content, pending }: ChatMessageProps) {
         <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
           {content}
         </ReactMarkdown>
-      ) : pending ? (
+      ) : pending && !hasDisplays ? (
         <span className="text-[var(--text-muted)]">…</span>
       ) : null}
+      {hasDisplays ? <ChatDisplays displays={displays} /> : null}
     </div>
   );
 }

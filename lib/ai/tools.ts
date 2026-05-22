@@ -24,6 +24,12 @@ import {
   type Bucket,
 } from "@/lib/derive/muscle-mapping";
 import { computeMuscleBalance } from "@/lib/derive/muscle-balance";
+import type {
+  ChatDisplay,
+  ExerciseChartPointPayload,
+  SessionListEntry,
+  WorkoutPlanExercise,
+} from "./display";
 
 // ── Serialization helpers ────────────────────────────────────────────────
 
@@ -187,6 +193,122 @@ export const TOOL_DEFINITIONS: Anthropic.Tool[] = [
     },
   },
   {
+    name: "show_exercise_chart",
+    description:
+      "Render an inline chart of an exercise's progression to the user. Use this when the user asks about a specific lift's history, trajectory, or progress. The chart appears beneath your text reply.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        name: {
+          type: "string",
+          description:
+            "Exact exercise name. Use search_exercise first if the user's phrasing may not match.",
+        },
+        metric: {
+          type: "string",
+          enum: ["max_weight", "estimated_1rm"],
+          description:
+            "Which series to plot. Default estimated_1rm — it smooths over rep-range variation.",
+        },
+        weeks: {
+          type: "number",
+          description:
+            "How many weeks of history to plot. Defaults to 16. Use 52+ for long-term progression.",
+        },
+      },
+      required: ["name"],
+    },
+  },
+  {
+    name: "show_workout_plan",
+    description:
+      "Render an inline workout plan card listing exercises with sets, reps, and target weight. Use this whenever you propose a session (push day, pull day, leg day, accessory work, etc.). Always include this when suggesting a workout — don't just describe it in prose.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        title: {
+          type: "string",
+          description: "Short title e.g. \"Push Day\" or \"Heavy Lower\".",
+        },
+        exercises: {
+          type: "array",
+          description: "Ordered list of exercises in the workout.",
+          items: {
+            type: "object",
+            properties: {
+              name: { type: "string" },
+              sets: { type: "number" },
+              reps: {
+                type: "string",
+                description: "Reps as text — e.g. \"5\", \"8-10\", \"AMRAP\".",
+              },
+              weight: {
+                type: "number",
+                description: "Target working weight in kg. Optional.",
+              },
+              notes: { type: "string" },
+            },
+            required: ["name", "sets", "reps"],
+          },
+        },
+        notes: {
+          type: "string",
+          description: "Optional one-line note about pacing, RPE target, etc.",
+        },
+      },
+      required: ["title", "exercises"],
+    },
+  },
+  {
+    name: "show_stat",
+    description:
+      "Render a single big-number callout card. Use sparingly to highlight one headline number — a PR value, volume change %, sessions/week, etc. Don't use for every reply.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        label: {
+          type: "string",
+          description: "Short label e.g. \"Bench 1RM\" or \"Volume vs prior 4 wks\".",
+        },
+        value: {
+          type: "string",
+          description: "Formatted value e.g. \"102.5\" or \"+18%\".",
+        },
+        unit: {
+          type: "string",
+          description: "Optional unit suffix like \"kg\", \"sessions/wk\".",
+        },
+        delta: {
+          type: "object",
+          properties: {
+            value: { type: "string" },
+            direction: { type: "string", enum: ["up", "down", "flat"] },
+          },
+          required: ["value", "direction"],
+        },
+        context: {
+          type: "string",
+          description: "Optional one-line context e.g. \"set on Mar 12\".",
+        },
+      },
+      required: ["label", "value"],
+    },
+  },
+  {
+    name: "show_session_list",
+    description:
+      "Render a compact list of recent sessions (date + top lifts). Use when the user asks 'what did I do recently' or similar.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        limit: {
+          type: "number",
+          description: "How many recent sessions to show (default 5, max 10).",
+        },
+      },
+    },
+  },
+  {
     name: "search_exercise",
     description:
       "Fuzzy-find exercise names in the dataset matching a query string. Use when the user's phrasing may not match the exact name.",
@@ -219,45 +341,80 @@ export interface BodyMeasurement {
 
 // ── Tool runner ──────────────────────────────────────────────────────────
 
+export interface ToolRunResult {
+  /** JSON payload sent back to the model as tool_result content. */
+  payload: unknown;
+  /** Optional inline UI payload to render in the chat message. */
+  display?: ChatDisplay;
+}
+
 export function runTool(
   name: string,
   input: unknown,
   ctx: ToolContext,
-): unknown {
+): ToolRunResult {
   const args = (input ?? {}) as Record<string, unknown>;
   switch (name) {
     case "get_overview_stats":
-      return toolOverview(ctx.dataset);
+      return { payload: toolOverview(ctx.dataset) };
     case "get_top_exercises":
-      return toolTopExercises(
-        ctx.dataset,
-        toNum(args.weeks, 4),
-        Math.min(toNum(args.limit, 8), 20),
-      );
+      return {
+        payload: toolTopExercises(
+          ctx.dataset,
+          toNum(args.weeks, 4),
+          Math.min(toNum(args.limit, 8), 20),
+        ),
+      };
     case "get_exercise_history":
-      return toolExerciseHistory(
+      return {
+        payload: toolExerciseHistory(
+          ctx.dataset,
+          toStr(args.name),
+          toNum(args.weeks, 16),
+        ),
+      };
+    case "get_recent_sessions":
+      return {
+        payload: toolRecentSessions(
+          ctx.dataset,
+          Math.min(toNum(args.limit, 5), 20),
+        ),
+      };
+    case "get_prs":
+      return {
+        payload: toolPRs(ctx.dataset, Math.min(toNum(args.limit, 10), 25)),
+      };
+    case "get_body_measurements":
+      return {
+        payload: toolBodyMeasurements(
+          ctx.bodyMeasurements,
+          toNum(args.weeks, 26),
+        ),
+      };
+    case "get_muscle_group_breakdown":
+      return {
+        payload: toolMuscleBreakdown(ctx.dataset, toNum(args.weeks, 8)),
+      };
+    case "search_exercise":
+      return { payload: toolSearchExercise(ctx.dataset, toStr(args.query)) };
+    case "show_exercise_chart":
+      return toolShowExerciseChart(
         ctx.dataset,
         toStr(args.name),
+        toStr(args.metric) === "max_weight" ? "max_weight" : "estimated_1rm",
         toNum(args.weeks, 16),
       );
-    case "get_recent_sessions":
-      return toolRecentSessions(
+    case "show_workout_plan":
+      return toolShowWorkoutPlan(args);
+    case "show_stat":
+      return toolShowStat(args);
+    case "show_session_list":
+      return toolShowSessionList(
         ctx.dataset,
-        Math.min(toNum(args.limit, 5), 20),
+        Math.min(toNum(args.limit, 5), 10),
       );
-    case "get_prs":
-      return toolPRs(ctx.dataset, Math.min(toNum(args.limit, 10), 25));
-    case "get_body_measurements":
-      return toolBodyMeasurements(
-        ctx.bodyMeasurements,
-        toNum(args.weeks, 26),
-      );
-    case "get_muscle_group_breakdown":
-      return toolMuscleBreakdown(ctx.dataset, toNum(args.weeks, 8));
-    case "search_exercise":
-      return toolSearchExercise(ctx.dataset, toStr(args.query));
     default:
-      return { error: `Unknown tool: ${name}` };
+      return { payload: { error: `Unknown tool: ${name}` } };
   }
 }
 
@@ -545,6 +702,179 @@ function toolSearchExercise(dataset: WorkoutDataset, query: string) {
     .filter((e) => e.toLowerCase().includes(q))
     .slice(0, 15);
   return { query, matches };
+}
+
+// ── Display-producing tools ──────────────────────────────────────────────
+
+function toolShowExerciseChart(
+  dataset: WorkoutDataset,
+  name: string,
+  metric: "max_weight" | "estimated_1rm",
+  weeks: number,
+): ToolRunResult {
+  const matched = resolveExerciseName(dataset, name);
+  if (!matched) {
+    return {
+      payload: {
+        error: `No exercise matching "${name}". Try search_exercise first.`,
+      },
+    };
+  }
+
+  const cutoff = subWeeks(dataset.dateRange.end, weeks);
+  const points: ExerciseChartPointPayload[] = [];
+  for (const session of dataset.sessions) {
+    if (session.date < cutoff) continue;
+    const sets = session.sets.filter(
+      (s) => s.exerciseName === matched && s.setType !== "warmup",
+    );
+    if (sets.length === 0) continue;
+    let maxWeight = 0;
+    let max1RM = 0;
+    let volume = 0;
+    for (const s of sets) {
+      volume += s.volume;
+      if (s.weight > maxWeight) maxWeight = s.weight;
+      const rm = epley1RM(s.weight, s.reps);
+      if (rm > max1RM) max1RM = rm;
+    }
+    points.push({
+      date: format(session.date, "yyyy-MM-dd"),
+      maxWeightKg: Math.round(maxWeight * 100) / 100,
+      est1RMKg: Math.round(max1RM * 10) / 10,
+      volumeKg: Math.round(volume),
+    });
+  }
+
+  points.sort((a, b) => a.date.localeCompare(b.date));
+
+  const display: ChatDisplay = {
+    kind: "exercise_chart",
+    exercise: matched,
+    metric,
+    windowWeeks: weeks,
+    points,
+  };
+
+  return {
+    payload: {
+      rendered: "exercise_chart",
+      exercise: matched,
+      metric,
+      pointCount: points.length,
+      windowWeeks: weeks,
+    },
+    display,
+  };
+}
+
+function toolShowWorkoutPlan(args: Record<string, unknown>): ToolRunResult {
+  const title = toStr(args.title).trim() || "Workout";
+  const rawExercises = Array.isArray(args.exercises) ? args.exercises : [];
+  const exercises: WorkoutPlanExercise[] = [];
+  for (const raw of rawExercises) {
+    if (!raw || typeof raw !== "object") continue;
+    const r = raw as Record<string, unknown>;
+    const name = toStr(r.name).trim();
+    if (!name) continue;
+    const sets = toNum(r.sets, 3);
+    const reps = toStr(r.reps).trim() || "8";
+    const weight =
+      typeof r.weight === "number" && Number.isFinite(r.weight)
+        ? r.weight
+        : undefined;
+    const notes = toStr(r.notes).trim() || undefined;
+    exercises.push({ name, sets, reps, weight, notes });
+  }
+
+  if (exercises.length === 0) {
+    return { payload: { error: "show_workout_plan requires exercises[]." } };
+  }
+
+  const notes = toStr(args.notes).trim() || undefined;
+  const display: ChatDisplay = {
+    kind: "workout_plan",
+    title,
+    exercises,
+    notes,
+  };
+  return {
+    payload: {
+      rendered: "workout_plan",
+      title,
+      exerciseCount: exercises.length,
+    },
+    display,
+  };
+}
+
+function toolShowStat(args: Record<string, unknown>): ToolRunResult {
+  const label = toStr(args.label).trim();
+  const value = toStr(args.value).trim();
+  if (!label || !value) {
+    return { payload: { error: "show_stat requires label and value." } };
+  }
+  const unit = toStr(args.unit).trim() || undefined;
+  const context = toStr(args.context).trim() || undefined;
+  let delta: { value: string; direction: "up" | "down" | "flat" } | undefined;
+  if (args.delta && typeof args.delta === "object") {
+    const d = args.delta as Record<string, unknown>;
+    const dv = toStr(d.value).trim();
+    const dir = toStr(d.direction);
+    if (dv && (dir === "up" || dir === "down" || dir === "flat")) {
+      delta = { value: dv, direction: dir };
+    }
+  }
+  const display: ChatDisplay = {
+    kind: "stat_highlight",
+    label,
+    value,
+    unit,
+    delta,
+    context,
+  };
+  return {
+    payload: { rendered: "stat_highlight", label, value },
+    display,
+  };
+}
+
+function toolShowSessionList(
+  dataset: WorkoutDataset,
+  limit: number,
+): ToolRunResult {
+  const sessions = [...dataset.sessions]
+    .sort((a, b) => b.date.getTime() - a.date.getTime())
+    .slice(0, limit);
+  const entries: SessionListEntry[] = sessions.map((s) => {
+    const byExercise = new Map<string, { weight: number; reps: number }>();
+    for (const set of s.sets) {
+      if (set.setType === "warmup") continue;
+      const cur = byExercise.get(set.exerciseName);
+      if (!cur || set.weight > cur.weight) {
+        byExercise.set(set.exerciseName, {
+          weight: set.weight,
+          reps: set.reps,
+        });
+      }
+    }
+    const topLifts = [...byExercise.entries()]
+      .sort((a, b) => b[1].weight - a[1].weight)
+      .slice(0, 3)
+      .map(([name, v]) =>
+        v.weight > 0 ? `${name} ${v.weight}×${v.reps}` : name,
+      );
+    return {
+      date: format(s.date, "yyyy-MM-dd"),
+      name: s.workoutName || undefined,
+      topLifts,
+    };
+  });
+  const display: ChatDisplay = { kind: "session_list", sessions: entries };
+  return {
+    payload: { rendered: "session_list", count: entries.length },
+    display,
+  };
 }
 
 // Re-export helpers used inside tool runs (avoid unused-import warnings).

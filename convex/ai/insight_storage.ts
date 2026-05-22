@@ -126,6 +126,7 @@ export const listChatMessages = query({
       content: r.content,
       createdAt: r.createdAt,
       pageContext: r.pageContext ?? null,
+      displays: r.displays ?? null,
     }));
   },
 });
@@ -219,6 +220,7 @@ export const recordChatTurn = mutation({
     userMessage: v.string(),
     assistantMessage: v.string(),
     pageContext: v.optional(v.string()),
+    displays: v.optional(v.array(v.any())),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -243,6 +245,7 @@ export const recordChatTurn = mutation({
       content: args.assistantMessage,
       pageContext: args.pageContext,
       createdAt: now + 1,
+      displays: args.displays,
     });
 
     const patch: { lastMessageAt: number; title?: string } = {

@@ -17,6 +17,11 @@ import type { Id } from "@/convex/_generated/dataModel";
 import { useDataset } from "@/context/dataset-context";
 import { serializeDataset } from "@/lib/ai/tools";
 import type { ChatMessage as ChatMessageType } from "@/lib/types";
+import {
+  type ChatDisplay,
+  coerceDisplays,
+  isChatDisplay,
+} from "@/lib/ai/display";
 import { ChatMessage } from "./chat-message";
 import { SuggestedPrompts } from "./suggested-prompts";
 import { ChatHistorySkeleton } from "@/components/loading/page-skeletons";
@@ -27,6 +32,8 @@ interface ChatPanelProps {
   onClose: () => void;
   pathname?: string;
 }
+
+type PanelMessage = ChatMessageType & { displays?: ChatDisplay[] };
 
 export function ChatPanel({ open, onClose, pathname }: ChatPanelProps) {
   const { dataset } = useDataset();
@@ -54,7 +61,7 @@ export function ChatPanel({ open, onClose, pathname }: ChatPanelProps) {
     open ? {} : "skip",
   );
 
-  const [transient, setTransient] = useState<ChatMessageType[]>([]);
+  const [transient, setTransient] = useState<PanelMessage[]>([]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -93,8 +100,15 @@ export function ChatPanel({ open, onClose, pathname }: ChatPanelProps) {
     });
   }, [history, transient, streaming]);
 
-  const messages: ChatMessageType[] = [
-    ...(history ?? []).map((h) => ({ role: h.role, content: h.content })),
+  const messages: PanelMessage[] = [
+    ...(history ?? []).map(
+      (h): PanelMessage => ({
+        role: h.role,
+        content: h.content,
+        displays:
+          h.role === "assistant" ? coerceDisplays(h.displays) : undefined,
+      }),
+    ),
     ...transient,
   ];
 
@@ -127,10 +141,11 @@ export function ChatPanel({ open, onClose, pathname }: ChatPanelProps) {
       const threadId = await ensureThread();
       if (!threadId) return;
 
-      const userMsg: ChatMessageType = { role: "user", content: text.trim() };
-      const assistantPlaceholder: ChatMessageType = {
+      const userMsg: PanelMessage = { role: "user", content: text.trim() };
+      const assistantPlaceholder: PanelMessage = {
         role: "assistant",
         content: "",
+        displays: [],
       };
       setTransient((m) => [...m, userMsg, assistantPlaceholder]);
       setStreaming(true);
@@ -158,30 +173,65 @@ export function ChatPanel({ open, onClose, pathname }: ChatPanelProps) {
         const reader = res.body?.getReader();
         const decoder = new TextDecoder();
         let assistantText = "";
-        if (reader) {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            assistantText += decoder.decode(value, { stream: true });
-            setTransient((m) => {
-              const copy = [...m];
-              copy[copy.length - 1] = {
-                role: "assistant",
-                content: assistantText,
-              };
-              return copy;
-            });
-          }
-        } else {
-          assistantText = await res.text();
+        const displays: ChatDisplay[] = [];
+        let buffer = "";
+
+        const updateLast = () => {
           setTransient((m) => {
             const copy = [...m];
             copy[copy.length - 1] = {
               role: "assistant",
               content: assistantText,
+              displays: [...displays],
             };
             return copy;
           });
+        };
+
+        const handleEvent = (raw: string) => {
+          const line = raw.trim();
+          if (!line) return;
+          let evt: unknown;
+          try {
+            evt = JSON.parse(line);
+          } catch {
+            // Backwards compatibility: if the server ever sends plain text,
+            // append it verbatim.
+            assistantText += line;
+            updateLast();
+            return;
+          }
+          if (!evt || typeof evt !== "object") return;
+          const e = evt as { type?: unknown; value?: unknown };
+          if (e.type === "text" && typeof e.value === "string") {
+            assistantText += e.value;
+            updateLast();
+          } else if (e.type === "display" && isChatDisplay(e.value)) {
+            displays.push(e.value);
+            updateLast();
+          } else if (e.type === "error" && typeof e.value === "string") {
+            assistantText += `\n\n_${e.value}_`;
+            updateLast();
+          }
+        };
+
+        if (reader) {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            let nl = buffer.indexOf("\n");
+            while (nl !== -1) {
+              const line = buffer.slice(0, nl);
+              buffer = buffer.slice(nl + 1);
+              handleEvent(line);
+              nl = buffer.indexOf("\n");
+            }
+          }
+          if (buffer.trim().length > 0) handleEvent(buffer);
+        } else {
+          const text = await res.text();
+          for (const line of text.split("\n")) handleEvent(line);
         }
       } catch (e) {
         setError(e instanceof Error ? e.message : "Chat failed.");
@@ -362,6 +412,7 @@ export function ChatPanel({ open, onClose, pathname }: ChatPanelProps) {
             key={i}
             role={m.role}
             content={m.content}
+            displays={m.displays}
             pending={
               streaming && i === messages.length - 1 && m.role === "assistant"
             }

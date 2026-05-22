@@ -10,6 +10,7 @@ import {
   type BodyMeasurement,
   type SerializedWorkoutDataset,
 } from "@/lib/ai/tools";
+import type { ChatDisplay } from "@/lib/ai/display";
 
 const DAILY_LIMIT = 50;
 const MAX_BODY_BYTES = 1_500_000; // ~1.5 MB — enough to fit a season of training
@@ -155,9 +156,24 @@ export async function POST(request: Request) {
 
   const encoder = new TextEncoder();
 
+  // NDJSON event protocol: each line is a JSON object of shape
+  //   { type: "text", value: string }
+  //   { type: "display", value: ChatDisplay }
+  //   { type: "error", value: string }
+  // Stream is consumed by components/ai/chat-panel.tsx.
+  type ChatEvent =
+    | { type: "text"; value: string }
+    | { type: "display"; value: ChatDisplay }
+    | { type: "error"; value: string };
+
   const readable = new ReadableStream({
     async start(controller) {
       let assistantText = "";
+      const collectedDisplays: ChatDisplay[] = [];
+
+      const send = (evt: ChatEvent) => {
+        controller.enqueue(encoder.encode(JSON.stringify(evt) + "\n"));
+      };
 
       try {
         for (let turn = 0; turn < MAX_TOOL_TURNS; turn++) {
@@ -187,7 +203,7 @@ export async function POST(request: Request) {
               event.delta.type === "text_delta"
             ) {
               assistantText += event.delta.text;
-              controller.enqueue(encoder.encode(event.delta.text));
+              send({ type: "text", value: event.delta.text });
             }
           }
 
@@ -211,7 +227,7 @@ export async function POST(request: Request) {
           // Optionally surface "Claude is looking up X" hints inline.
           for (const use of toolUses) {
             const hint = `\n\n_…fetching ${humanizeTool(use.name)}…_\n\n`;
-            controller.enqueue(encoder.encode(hint));
+            send({ type: "text", value: hint });
             assistantText += hint;
           }
 
@@ -222,10 +238,14 @@ export async function POST(request: Request) {
                   dataset,
                   bodyMeasurements,
                 });
+                if (result.display) {
+                  collectedDisplays.push(result.display);
+                  send({ type: "display", value: result.display });
+                }
                 return {
                   type: "tool_result",
                   tool_use_id: use.id,
-                  content: JSON.stringify(result),
+                  content: JSON.stringify(result.payload),
                 };
               } catch (err) {
                 return {
@@ -250,6 +270,8 @@ export async function POST(request: Request) {
             userMessage: message.trim(),
             assistantMessage: assistantText,
             pageContext: pageContext ?? undefined,
+            displays:
+              collectedDisplays.length > 0 ? collectedDisplays : undefined,
           })
           .catch((e) => {
             console.error("failed to persist chat turn", e);
@@ -257,9 +279,10 @@ export async function POST(request: Request) {
       } catch (e) {
         console.error("Claude API error:", e);
         try {
-          controller.enqueue(
-            encoder.encode("\n\n_Sorry — the AI request failed. Try again._"),
-          );
+          send({
+            type: "error",
+            value: "Sorry — the AI request failed. Try again.",
+          });
         } catch {
           /* ignore */
         }
@@ -270,7 +293,7 @@ export async function POST(request: Request) {
 
   return new Response(readable, {
     headers: {
-      "Content-Type": "text/plain; charset=utf-8",
+      "Content-Type": "application/x-ndjson; charset=utf-8",
       "Cache-Control": "no-cache",
     },
   });
@@ -294,6 +317,14 @@ function humanizeTool(name: string): string {
       return "muscle-group breakdown";
     case "search_exercise":
       return "matching exercises";
+    case "show_exercise_chart":
+      return "the exercise chart";
+    case "show_workout_plan":
+      return "the workout plan";
+    case "show_stat":
+      return "the stat highlight";
+    case "show_session_list":
+      return "recent sessions";
     default:
       return name;
   }

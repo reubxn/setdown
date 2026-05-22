@@ -77,6 +77,9 @@ export default defineSchema({
     content: v.string(),
     createdAt: v.number(),
     pageContext: v.optional(v.string()),
+    // Inline UI payloads rendered alongside the assistant's text. Shape is
+    // validated client-side against lib/ai/display.ChatDisplay.
+    displays: v.optional(v.array(v.any())),
   })
     .index("by_user_created", ["userId", "createdAt"])
     .index("by_thread_created", ["threadId", "createdAt"]),
