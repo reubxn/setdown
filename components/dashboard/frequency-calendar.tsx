@@ -13,14 +13,15 @@ import type { WorkoutDataset } from "@/lib/types";
 
 const DAY_MS = 86_400_000;
 const WEEKS = 53;
+const DAYS = WEEKS * 7;
 
-interface WeekCell {
-  weekStart: Date;
+interface Cell {
+  date: Date;
   count: number;
   intensity: 0 | 1 | 2 | 3 | 4;
 }
 
-function intensityFor(count: number, max: number): WeekCell["intensity"] {
+function intensityFor(count: number, max: number): Cell["intensity"] {
   if (count === 0 || max === 0) return 0;
   const ratio = count / max;
   if (ratio > 0.75) return 4;
@@ -29,7 +30,7 @@ function intensityFor(count: number, max: number): WeekCell["intensity"] {
   return 1;
 }
 
-const intensityClass: Record<WeekCell["intensity"], string> = {
+const intensityClass: Record<Cell["intensity"], string> = {
   0: "bg-[var(--bg-sunken)]",
   1: "bg-[color-mix(in_oklab,var(--accent)_18%,var(--bg-sunken))]",
   2: "bg-[color-mix(in_oklab,var(--accent)_38%,var(--bg-sunken))]",
@@ -38,7 +39,7 @@ const intensityClass: Record<WeekCell["intensity"], string> = {
 };
 
 export function FrequencyCalendar({ dataset }: { dataset: WorkoutDataset }) {
-  const weeks = useMemo<WeekCell[]>(() => {
+  const cells = useMemo<Cell[]>(() => {
     const today = dataset.dateRange.end;
     const endAnchor = startOfWeek(today, { weekStartsOn: 1 });
     const start = subDays(endAnchor, (WEEKS - 1) * 7);
@@ -49,40 +50,39 @@ export function FrequencyCalendar({ dataset }: { dataset: WorkoutDataset }) {
       counts.set(dayKey, (counts.get(dayKey) ?? 0) + 1);
     }
 
-    const weekCounts: WeekCell[] = [];
     let max = 0;
-    for (let w = 0; w < WEEKS; w++) {
-      const weekStart = addDays(start, w * 7);
-      let weekCount = 0;
-      for (let d = 0; d < 7; d++) {
-        const date = addDays(weekStart, d);
-        if (differenceInCalendarDays(date, today) > 0) break;
-        const dayKey = Math.floor(date.getTime() / DAY_MS);
-        weekCount += counts.get(dayKey) ?? 0;
+    for (const c of counts.values()) if (c > max) max = c;
+
+    const out: Cell[] = [];
+    for (let i = 0; i < DAYS; i++) {
+      const date = addDays(start, i);
+      if (differenceInCalendarDays(date, today) > 0) {
+        out.push({ date, count: 0, intensity: 0 });
+        continue;
       }
-      if (weekCount > max) max = weekCount;
-      weekCounts.push({ weekStart, count: weekCount, intensity: 0 });
+      const dayKey = Math.floor(date.getTime() / DAY_MS);
+      const count = counts.get(dayKey) ?? 0;
+      out.push({ date, count, intensity: intensityFor(count, max) });
     }
-    for (const wc of weekCounts) {
-      wc.intensity = intensityFor(wc.count, max);
-    }
-    return weekCounts;
+    return out;
   }, [dataset]);
 
-  const totalSessions = weeks.reduce((s, w) => s + w.count, 0);
+  const totalSessions = cells.reduce((s, c) => s + c.count, 0);
 
   const monthLabels = useMemo(() => {
     const labels: { col: number; label: string }[] = [];
     let lastMonth = -1;
-    for (let i = 0; i < weeks.length; i++) {
-      const m = weeks[i].weekStart.getMonth();
+    for (let week = 0; week < WEEKS; week++) {
+      const firstDay = cells[week * 7]?.date;
+      if (!firstDay) continue;
+      const m = firstDay.getMonth();
       if (m !== lastMonth) {
-        labels.push({ col: i, label: format(weeks[i].weekStart, "MMM") });
+        labels.push({ col: week, label: format(firstDay, "MMM") });
         lastMonth = m;
       }
     }
     return labels;
-  }, [weeks]);
+  }, [cells]);
 
   return (
     <Card padding="lg" className="@container">
@@ -106,13 +106,17 @@ export function FrequencyCalendar({ dataset }: { dataset: WorkoutDataset }) {
         </div>
         <div
           className="grid gap-[3px]"
-          style={{ gridTemplateColumns: `repeat(${WEEKS}, minmax(0, 1fr))` }}
+          style={{
+            gridTemplateColumns: `repeat(${WEEKS}, minmax(0, 1fr))`,
+            gridAutoFlow: "column",
+            gridTemplateRows: "repeat(7, minmax(0, 1fr))",
+          }}
         >
-          {weeks.map((week, i) => (
+          {cells.map((cell, i) => (
             <div
               key={i}
-              title={`Week of ${format(week.weekStart, "MMM d, yyyy")} — ${week.count} session${week.count === 1 ? "" : "s"}`}
-              className={`h-10 rounded-[3px] ${intensityClass[week.intensity]}`}
+              title={`${format(cell.date, "MMM d, yyyy")} — ${cell.count} session${cell.count === 1 ? "" : "s"}`}
+              className={`aspect-square w-full rounded-[2px] ${intensityClass[cell.intensity]}`}
             />
           ))}
         </div>
@@ -122,7 +126,7 @@ export function FrequencyCalendar({ dataset }: { dataset: WorkoutDataset }) {
         {[0, 1, 2, 3, 4].map((i) => (
           <span
             key={i}
-            className={`h-3 w-3 rounded-[2px] ${intensityClass[i as WeekCell["intensity"]]}`}
+            className={`h-3 w-3 rounded-[2px] ${intensityClass[i as Cell["intensity"]]}`}
           />
         ))}
         <span>More</span>

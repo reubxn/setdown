@@ -71,9 +71,9 @@ export function BodyHeatmap(props: Props) {
   const maxWidth = props.maxWidth ?? 340;
 
   return (
-    <Card>
+    <Card className="flex h-full flex-col">
       <CardHeader
-        title={props.title ?? "Muscle map"}
+        title={props.title ?? "Muscles"}
         subtitle={props.subtitle}
         action={
           <SegmentedControl
@@ -87,21 +87,19 @@ export function BodyHeatmap(props: Props) {
           />
         }
       />
-      <CardBody>
+      <CardBody className="flex flex-1 items-center justify-center">
         {data.length === 0 ? (
-          <div className="flex h-[300px] items-center justify-center text-sm text-[var(--text-muted)]">
+          <div className="flex h-full min-h-[300px] items-center justify-center text-sm text-[var(--text-muted)]">
             No muscles to show.
           </div>
         ) : (
-          <div className="flex justify-center">
-            <Model
-              data={data}
-              type={view}
-              bodyColor="var(--bg-sunken)"
-              highlightedColors={HIGHLIGHT_RAMP}
-              style={{ width: "100%", maxWidth, padding: 8 }}
-            />
-          </div>
+          <Model
+            data={data}
+            type={view}
+            bodyColor="var(--bg-sunken)"
+            highlightedColors={HIGHLIGHT_RAMP}
+            style={{ width: "100%", maxWidth, padding: 8 }}
+          />
         )}
       </CardBody>
     </Card>

@@ -154,14 +154,17 @@ export default function OverviewPage() {
       <div className="space-y-4 lg:space-y-6">
         <KpiRow items={kpis} />
 
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-6">
-          <div className="lg:col-span-2">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:grid-rows-[auto_auto] lg:gap-6">
+          <div className="lg:col-span-2 lg:row-start-1">
             <VolumeCard dataset={dataset} />
           </div>
-          <BodyHeatmap dataset={dataset} />
+          <div className="lg:col-start-3 lg:row-span-2 lg:row-start-1">
+            <BodyHeatmap dataset={dataset} />
+          </div>
+          <div className="lg:col-span-2 lg:col-start-1 lg:row-start-2">
+            <FrequencyCalendar dataset={dataset} />
+          </div>
         </div>
-
-        <FrequencyCalendar dataset={dataset} />
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-6">
           <RecentPRs dataset={dataset} />
