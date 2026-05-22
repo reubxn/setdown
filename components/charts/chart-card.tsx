@@ -1,6 +1,6 @@
 "use client";
 
-import { MetricCard } from "@/components/legacy/card";
+import { Card } from "@/components/ui/card";
 import { TimeRangePicker } from "./time-range-picker";
 import { timeRangeLabel, type TimeRange } from "@/lib/time-range";
 import { cn } from "@/lib/utils";
@@ -25,7 +25,7 @@ export function ChartCard({
   hasData?: boolean;
 }) {
   return (
-    <MetricCard className={cn(className)}>
+    <Card className={cn(className)} padding="sm">
       <div className="mb-3 flex items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="text-xs font-medium tracking-[0.08em] text-[var(--text-muted)] uppercase">
@@ -47,6 +47,6 @@ export function ChartCard({
           {emptyMessage}
         </p>
       )}
-    </MetricCard>
+    </Card>
   );
 }
