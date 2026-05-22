@@ -57,7 +57,7 @@ export function SidebarNav() {
               <Icon
                 className={cn(
                   "h-5 w-5 shrink-0",
-                  active ? "text-[var(--accent-blue)]" : ""
+                  active ? "text-[var(--accent)]" : ""
                 )}
                 strokeWidth={1.5}
               />

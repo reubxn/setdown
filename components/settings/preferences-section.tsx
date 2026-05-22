@@ -8,18 +8,15 @@ const STORAGE_KEY = "setdown-preferences-v1";
 
 type Units = "kg" | "lb";
 type WeekStart = "mon" | "sun";
-type Theme = "dark" | "light";
 
 interface Preferences {
   units: Units;
   weekStart: WeekStart;
-  theme: Theme;
 }
 
 const DEFAULTS: Preferences = {
   units: "kg",
   weekStart: "mon",
-  theme: "dark",
 };
 
 function load(): Preferences {
@@ -76,19 +73,6 @@ export function PreferencesSection() {
                 { value: "sun", label: "Sun" },
               ]}
               aria-label="Week start day"
-            />
-          </Row>
-
-          <Row label="Theme">
-            <SegmentedControl<Theme>
-              size="sm"
-              value={prefs.theme}
-              onChange={(v) => setPrefs((p) => ({ ...p, theme: v }))}
-              options={[
-                { value: "dark", label: "Dark" },
-                { value: "light", label: "Light (soon)" },
-              ]}
-              aria-label="Theme"
             />
           </Row>
         </div>
