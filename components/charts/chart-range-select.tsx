@@ -126,7 +126,7 @@ export function ChartSelectionSummary({
 }) {
   const dirColor =
     delta.direction === "up"
-      ? "text-[var(--accent-green)]"
+      ? "text-[var(--accent)]"
       : delta.direction === "down"
         ? "text-[#FF6B6B]"
         : "text-[var(--text-muted)]";

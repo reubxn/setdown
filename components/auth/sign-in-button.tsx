@@ -23,7 +23,7 @@ export function SignInButton({
         type="button"
         onClick={() => setOpen(true)}
         className={cn(
-          "rounded-xl bg-[var(--accent-green)] px-4 py-2.5 text-sm font-semibold text-black transition-colors hover:bg-[var(--accent-green)]/90 disabled:opacity-50",
+          "rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[var(--accent-hover)] disabled:opacity-50",
           className,
         )}
       >
