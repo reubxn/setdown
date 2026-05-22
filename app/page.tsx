@@ -1,14 +1,29 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useDataset } from "@/context/dataset-context";
+import { useAuth } from "@/context/auth-context";
 import { SignInButton } from "@/components/auth/sign-in-button";
 import { Hero } from "@/components/landing/hero";
 import { PrivacyNote } from "@/components/landing/privacy-note";
 
 export default function HomePage() {
+  const router = useRouter();
   const { dataset, loading } = useDataset();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+
+  const shouldRedirect =
+    (!authLoading && isAuthenticated) || (!loading && !!dataset);
+
+  useEffect(() => {
+    if (shouldRedirect) {
+      router.replace("/overview");
+    }
+  }, [shouldRedirect, router]);
+
+  if (shouldRedirect) return null;
 
   return (
     <main className="min-h-dvh bg-[var(--bg-base)] text-[var(--text-primary)]">
@@ -18,23 +33,6 @@ export default function HomePage() {
         </Link>
         <SignInButton />
       </header>
-
-      {!loading && dataset && (
-        <div className="mx-auto w-full max-w-[1200px] px-6">
-          <Link
-            href="/overview"
-            className="flex items-center justify-between gap-3 rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-4 py-3 text-sm transition-colors hover:border-[var(--border-strong)]"
-          >
-            <span className="text-[var(--text-secondary)]">
-              You have an existing dataset.
-            </span>
-            <span className="inline-flex items-center gap-1.5 font-medium text-[var(--accent)]">
-              Continue to your dashboard
-              <ArrowRight className="h-4 w-4" />
-            </span>
-          </Link>
-        </div>
-      )}
 
       <Hero />
       <PrivacyNote />
