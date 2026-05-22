@@ -22,6 +22,7 @@ import {
 } from "@/lib/derive/one-rm";
 import { exerciseProgressSeries } from "@/lib/chart-series";
 import { ExerciseLineChart } from "@/components/charts/trend-chart";
+import { ExerciseDetailSkeleton } from "@/components/loading/page-skeletons";
 
 const COMPARE_COLOR = "#FFD60A";
 const PRIMARY_COLOR = "var(--accent)";
@@ -85,11 +86,7 @@ export default function ExerciseDetailPage() {
   }, [dataset, exerciseName]);
 
   if (loading) {
-    return (
-      <PageShell title="Loading…">
-        <p className="text-sm text-[var(--text-muted)]">Loading…</p>
-      </PageShell>
-    );
+    return <ExerciseDetailSkeleton />;
   }
 
   if (!dataset) {

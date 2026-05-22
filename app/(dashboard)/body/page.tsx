@@ -7,6 +7,7 @@ import { BodyLog } from "@/components/analytics/body-log";
 import { LoginModal } from "@/components/auth/login-modal";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { BodySkeleton } from "@/components/loading/page-skeletons";
 
 export default function BodyPage() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -24,7 +25,7 @@ export default function BodyPage() {
       </header>
 
       {isLoading ? (
-        <p className="text-sm text-[var(--text-muted)]">Loading…</p>
+        <BodySkeleton />
       ) : isAuthenticated ? (
         <BodyLog />
       ) : (
