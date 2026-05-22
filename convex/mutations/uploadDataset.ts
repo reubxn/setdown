@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { rateLimiter } from "../rateLimits";
 
 export default mutation({
   args: {
@@ -22,6 +23,8 @@ export default mutation({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (userId === null) throw new Error("not authenticated");
+
+    await rateLimiter.limit(ctx, "uploadDataset", { key: userId, throws: true });
 
     const existing = await ctx.db
       .query("datasets")
