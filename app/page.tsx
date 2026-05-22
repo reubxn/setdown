@@ -7,6 +7,7 @@ import { useDataset } from "@/context/dataset-context";
 import { useAuth } from "@/context/auth-context";
 import { SignInButton } from "@/components/auth/sign-in-button";
 import { Hero } from "@/components/landing/hero";
+import { ExportTutorial } from "@/components/landing/export-tutorial";
 import { PrivacyNote } from "@/components/landing/privacy-note";
 
 export default function HomePage() {
@@ -35,6 +36,7 @@ export default function HomePage() {
       </header>
 
       <Hero />
+      <ExportTutorial />
       <PrivacyNote />
     </main>
   );
