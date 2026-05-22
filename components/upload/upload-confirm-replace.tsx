@@ -21,11 +21,11 @@ export function UploadConfirmReplace({
     <Modal
       open={open}
       onClose={onCancel}
-      title="Replace your workout data?"
+      title="Catch up with your latest export?"
       description={
         fileName
-          ? `We'll replace your existing workouts with ${fileName}.`
-          : "We'll replace your existing workouts with the new file."
+          ? `We'll update your workouts from ${fileName}.`
+          : "We'll update your workouts from the new export."
       }
       footer={
         <>
@@ -33,14 +33,14 @@ export function UploadConfirmReplace({
             Cancel
           </Button>
           <Button variant="primary" onClick={onConfirm}>
-            Replace
+            Update
           </Button>
         </>
       }
     >
       <p>
-        We&apos;ll keep your AI chat history and body measurements, but replace
-        your workouts.
+        Your AI chat history and body measurements stay put — we&apos;re just
+        catching your workouts up to the new export.
       </p>
     </Modal>
   );
