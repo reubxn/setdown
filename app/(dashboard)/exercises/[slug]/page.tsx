@@ -23,6 +23,7 @@ import {
 import { exerciseProgressSeries } from "@/lib/chart-series";
 import { ExerciseLineChart } from "@/components/charts/trend-chart";
 import { ExerciseDetailSkeleton } from "@/components/loading/page-skeletons";
+import { BodyHeatmap } from "@/components/analytics/body-heatmap";
 
 const COMPARE_COLOR = "#FFD60A";
 const PRIMARY_COLOR = "var(--accent)";
