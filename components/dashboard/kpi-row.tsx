@@ -21,7 +21,7 @@ export function KpiRow({
 }) {
   return (
     <Card padding="lg" className={cn("@container", className)}>
-      <div className="grid grid-cols-2 gap-x-6 gap-y-5 @md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-x-3 gap-y-5 @sm:gap-x-6 @md:grid-cols-4">
         {items.map((item) => (
           <Metric
             key={item.label}
