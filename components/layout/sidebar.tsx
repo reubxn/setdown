@@ -35,7 +35,7 @@ const baseNav: NavItem[] = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
 
   const items = baseNav.filter((item) => !item.authOnly || isAuthenticated);
 
@@ -79,7 +79,9 @@ export function Sidebar() {
       </nav>
 
       <div className="border-t border-[var(--border-subtle)] p-3">
-        {isAuthenticated ? (
+        {isLoading ? (
+          <div className="h-12" />
+        ) : isAuthenticated ? (
           <UserMenu />
         ) : (
           <SignInButton className="w-full" />
