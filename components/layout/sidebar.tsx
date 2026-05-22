@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  BarChart3,
   Dumbbell,
   History,
   Home,
@@ -27,7 +28,8 @@ const baseNav: NavItem[] = [
   { href: "/exercises", label: "Exercises", icon: Dumbbell },
   { href: "/history", label: "History", icon: History },
   { href: "/body", label: "Body", icon: User, authOnly: true },
-  { href: "/insights", label: "Insights", icon: Sparkles, authOnly: true },
+  { href: "/insights", label: "Insights", icon: BarChart3, authOnly: true },
+  { href: "/coach", label: "Coach", icon: Sparkles, authOnly: true },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 

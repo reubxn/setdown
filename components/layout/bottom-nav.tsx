@@ -23,7 +23,7 @@ export function BottomNav() {
   const { isAuthenticated } = useAuth();
 
   const tail = isAuthenticated
-    ? { href: "/insights", label: "AI", icon: Sparkles }
+    ? { href: "/coach", label: "Coach", icon: Sparkles }
     : { href: "/settings", label: "More", icon: MoreHorizontal };
 
   const all = [...items, tail];
