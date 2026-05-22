@@ -7,7 +7,6 @@
   --bg-secondary: #0f141a;
   --card: #1a2128;
   --card-alt: #1c1c1e;
-  --accent-blue: #00c2ff;
   --accent-yellow: #ffd60a;
   --accent-red: #ff3b30;
   --chart-bar: #2a3540;
@@ -26,10 +25,10 @@
   --text-secondary: #c2c8d0;
   --text-muted: #7d8b9a;
 
-  /* accent — sport blue */
-  --accent: #1d4ed8;
-  --accent-hover: #1e40af;
-  --accent-muted: rgba(29, 78, 216, 0.16);
+  /* accent — sport cyan */
+  --accent: #00c2ff;
+  --accent-hover: #00a8e0;
+  --accent-muted: rgba(0, 194, 255, 0.16);
 
   /* semantic */
   --danger: #ff4d4f;

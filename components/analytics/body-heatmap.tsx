@@ -17,10 +17,10 @@ const Model = dynamic(() => import("react-body-highlighter"), { ssr: false });
 type View = "anterior" | "posterior";
 
 const HIGHLIGHT_RAMP = [
-  "rgba(29, 78, 216, 0.20)",
-  "rgba(29, 78, 216, 0.40)",
-  "rgba(29, 78, 216, 0.60)",
-  "rgba(29, 78, 216, 0.80)",
+  "rgba(0, 194, 255, 0.20)",
+  "rgba(0, 194, 255, 0.40)",
+  "rgba(0, 194, 255, 0.60)",
+  "rgba(0, 194, 255, 0.80)",
   colors.accent,
 ];
 
