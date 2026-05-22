@@ -1,286 +1,138 @@
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { format } from "date-fns";
-import { Activity, Clock, Dumbbell, TrendingUp } from "lucide-react";
+import { useMemo } from "react";
+import { format, isWithinInterval, startOfMonth, endOfMonth } from "date-fns";
+import Link from "next/link";
+import { Upload } from "lucide-react";
 import { useDataset } from "@/context/dataset-context";
-import { TabNav } from "@/components/legacy/tab-nav";
-import { MetricCard, InsightCard } from "@/components/legacy/card";
-import { StatRow } from "@/components/legacy/stat-row";
-import { SectionLabel } from "@/components/legacy/section-label";
-import { PageShell, ChartGrid } from "@/components/layout/page-shell";
-import { ChartCard } from "@/components/charts/chart-card";
+import { PageShell } from "@/components/layout/page-shell";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { KpiRow, type KpiItem } from "@/components/dashboard/kpi-row";
+import { VolumeCard } from "@/components/dashboard/volume-card";
+import { FrequencyCalendar } from "@/components/dashboard/frequency-calendar";
+import { RecentPRs } from "@/components/dashboard/recent-prs";
+import { TopExercises } from "@/components/dashboard/top-exercises";
+import { PeriodCompareCard } from "@/components/dashboard/period-compare";
 import {
-  VolumeAreaChart,
-  SessionBarChart,
-  DurationLineChart,
-  TopExercisesBarChart,
-} from "@/components/charts/trend-chart";
-import {
-  volumeTimeSeries,
-  sessionCountSeries,
-  durationTimeSeries,
-  topExercisesBarSeries,
-  rangeSummaryStats,
-} from "@/lib/chart-series";
-import type { TimeRange } from "@/lib/time-range";
-import { timeRangeLabel } from "@/lib/time-range";
-import {
-  overviewStats,
-  formatVolume,
-  formatDuration,
   detectPRs,
+  formatVolume,
+  overviewStats,
 } from "@/lib/metrics";
+import { computeStreaks } from "@/lib/derive/streaks";
 
-function hasChartData(data: { value: number }[]) {
-  return data.some((d) => d.value > 0);
+function EmptyState() {
+  return (
+    <PageShell title="Overview">
+      <Card padding="lg" className="mx-auto max-w-xl text-center">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[var(--bg-sunken)] text-[var(--accent)]">
+          <Upload className="h-5 w-5" aria-hidden />
+        </div>
+        <h2 className="mt-4 text-lg font-semibold text-[var(--text-primary)]">
+          No workouts yet
+        </h2>
+        <p className="mt-1 text-sm text-[var(--text-muted)]">
+          Drop your Strong export to see volume, frequency, and PRs.
+        </p>
+        <div className="mt-5">
+          <Link href="/upload">
+            <Button variant="primary">Upload CSV</Button>
+          </Link>
+        </div>
+      </Card>
+    </PageShell>
+  );
 }
 
-function OverviewContent() {
-  const { dataset } = useDataset();
-  const searchParams = useSearchParams();
-  const tab = searchParams.get("tab") ?? "overview";
-  const [range, setRange] = useState<TimeRange>("1m");
-
-  const stats = useMemo(
-    () => (dataset ? overviewStats(dataset) : null),
-    [dataset]
-  );
-  const rangeStats = useMemo(
-    () => (dataset ? rangeSummaryStats(dataset, range) : null),
-    [dataset, range]
-  );
-  const volumeData = useMemo(
-    () => (dataset ? volumeTimeSeries(dataset, range) : []),
-    [dataset, range]
-  );
-  const sessionData = useMemo(
-    () => (dataset ? sessionCountSeries(dataset, range) : []),
-    [dataset, range]
-  );
-  const durationData = useMemo(
-    () => (dataset ? durationTimeSeries(dataset, range) : []),
-    [dataset, range]
-  );
-  const topExercisesData = useMemo(
-    () => (dataset ? topExercisesBarSeries(dataset, range, 8) : []),
-    [dataset, range]
-  );
-  const prs = useMemo(
-    () => (dataset ? detectPRs(dataset, 10) : []),
-    [dataset]
-  );
-  const recentSessions = useMemo(
-    () => dataset?.sessions.slice(0, 3) ?? [],
-    [dataset]
-  );
-
-  if (!dataset || !stats || !rangeStats) return null;
-
-  const trendDir =
-    stats.volumeChangePercent > 2
-      ? "up"
-      : stats.volumeChangePercent < -2
-        ? "down"
-        : "neutral";
-  const trendText =
-    trendDir === "neutral"
-      ? "—"
-      : `${stats.volumeChangePercent > 0 ? "▲" : "▼"} ${Math.abs(Math.round(stats.volumeChangePercent))}%`;
-
+function OverviewLoading() {
   return (
-    <PageShell
-      title="Overview"
-      subtitle={`${format(dataset.dateRange.start, "MMM yyyy")} — ${format(dataset.dateRange.end, "MMM yyyy")}`}
-      className="!pt-4 lg:!pt-8"
-    >
-      <header className="mb-4 flex items-center justify-between lg:hidden">
-        <div className="h-8 w-8 rounded-full bg-[var(--card)]" />
-        <span className="text-xs font-medium tracking-[0.08em] text-[var(--text-muted)] uppercase">
-          {format(dataset.dateRange.end, "MMM yyyy")}
-        </span>
-        <div className="h-2 w-2 rounded-full bg-[var(--accent-green)]" />
-      </header>
-
-      <TabNav />
-
-      <div className="mt-4 space-y-4 lg:space-y-6">
-        {tab === "overview" && (
-          <>
-            <MetricCard className="lg:p-6">
-              <p className="mb-2 text-[10px] text-[var(--text-muted)] lg:text-xs">
-                {timeRangeLabel(range)} · summary
-              </p>
-              <div className="lg:grid lg:grid-cols-2 lg:gap-x-8 xl:grid-cols-4 xl:gap-x-6">
-              <StatRow
-                icon={Activity}
-                label="Sessions"
-                value={String(rangeStats.sessionCount)}
-              />
-              <StatRow
-                icon={TrendingUp}
-                label="Volume"
-                value={formatVolume(rangeStats.totalVolume)}
-                trend={{ direction: trendDir, text: trendText }}
-              />
-              <StatRow
-                icon={Clock}
-                label="Avg duration"
-                value={formatDuration(Math.round(rangeStats.avgDurationMinutes))}
-              />
-              <StatRow
-                icon={Dumbbell}
-                label="Top exercise"
-                value={(() => {
-                  const name = topExercisesData[0]?.date ?? stats.topExercise;
-                  return name.length > 24 ? name.slice(0, 24) + "…" : name;
-                })()}
-              />
-              </div>
-            </MetricCard>
-
-            <ChartGrid>
-            <ChartCard
-              title="Training volume"
-              range={range}
-              onRangeChange={setRange}
-              hasData={hasChartData(volumeData)}
-            >
-              <VolumeAreaChart data={volumeData} chartId="overview-volume" />
-            </ChartCard>
-
-            <ChartCard
-              title="Workout frequency"
-              range={range}
-              onRangeChange={setRange}
-              hasData={hasChartData(sessionData)}
-            >
-              <SessionBarChart data={sessionData} />
-            </ChartCard>
-
-            <ChartCard
-              title="Session duration"
-              range={range}
-              onRangeChange={setRange}
-              hasData={hasChartData(durationData)}
-            >
-              <DurationLineChart data={durationData} />
-            </ChartCard>
-            </ChartGrid>
-
-            <div className="lg:grid lg:grid-cols-2 lg:gap-6">
-            <InsightCard>
-              <SectionLabel className="mb-2">Insight</SectionLabel>
-              <p className="text-sm text-white/80 leading-relaxed">
-                {rangeStats.sessionCount} sessions {timeRangeLabel(range).toLowerCase()} with{" "}
-                {formatVolume(rangeStats.totalVolume)} total volume.
-                {stats.volumeChangePercent !== 0 &&
-                  ` ${stats.volumeChangePercent > 0 ? "Up" : "Down"} ${Math.abs(Math.round(stats.volumeChangePercent))}% vs prior 4 weeks.`}
-              </p>
-            </InsightCard>
-
-            <div>
-              <SectionLabel className="mb-3 px-1">Recent sessions</SectionLabel>
-              <div className="space-y-2 lg:grid lg:grid-cols-1 lg:gap-2 lg:space-y-0">
-                {recentSessions.map((s) => (
-                  <div
-                    key={s.id}
-                    className="rounded-2xl bg-[var(--card)] p-4"
-                  >
-                    <p className="font-medium capitalize">{s.workoutName}</p>
-                    <p className="mt-1 text-xs text-[var(--text-muted)]">
-                      {format(s.date, "MMM d, yyyy")} ·{" "}
-                      {formatDuration(s.durationMinutes)} · {s.exerciseCount}{" "}
-                      exercises
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-            </div>
-          </>
-        )}
-
-        {tab === "volume" && (
-          <ChartGrid>
-            <ChartCard
-              title="Volume over time"
-              range={range}
-              onRangeChange={setRange}
-              subtitle={`Total: ${formatVolume(rangeStats.totalVolume)}`}
-              hasData={hasChartData(volumeData)}
-            >
-              <VolumeAreaChart data={volumeData} chartId="volume-tab" />
-            </ChartCard>
-
-            <ChartCard
-              title="Sessions per period"
-              range={range}
-              onRangeChange={setRange}
-              hasData={hasChartData(sessionData)}
-            >
-              <SessionBarChart data={sessionData} />
-            </ChartCard>
-
-            <ChartCard
-              title="Top exercises by volume"
-              range={range}
-              onRangeChange={setRange}
-              hasData={hasChartData(topExercisesData)}
-            >
-              <TopExercisesBarChart data={topExercisesData} />
-            </ChartCard>
-
-            <ChartCard
-              title="Average session length"
-              range={range}
-              onRangeChange={setRange}
-              hasData={hasChartData(durationData)}
-            >
-              <DurationLineChart data={durationData} />
-            </ChartCard>
-          </ChartGrid>
-        )}
-
-        {tab === "prs" && (
-          <MetricCard title="Recent PRs" className="lg:max-w-4xl">
-            <div className="space-y-3 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
-              {prs.length === 0 ? (
-                <p className="text-sm text-[var(--text-muted)]">No PRs detected yet.</p>
-              ) : (
-                prs.map((pr, i) => (
-                  <div
-                    key={i}
-                    className="flex justify-between gap-2 border-b border-white/5 pb-3 last:border-0"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium truncate">{pr.exercise}</p>
-                      <p className="text-xs text-[var(--text-muted)]">{pr.metric}</p>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <p className="text-sm font-semibold text-[var(--accent-green)]">
-                        {pr.value} kg
-                      </p>
-                      <p className="text-xs text-[var(--text-muted)]">
-                        {format(pr.date, "MMM d")}
-                      </p>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </MetricCard>
-        )}
-      </div>
+    <PageShell title="Overview">
+      <p className="p-8 text-center text-sm text-[var(--text-muted)]">
+        Loading…
+      </p>
     </PageShell>
   );
 }
 
 export default function OverviewPage() {
+  const { dataset, loading } = useDataset();
+
+  const kpis = useMemo<KpiItem[] | null>(() => {
+    if (!dataset) return null;
+    const stats = overviewStats(dataset);
+    const streaks = computeStreaks(dataset);
+
+    const monthStart = startOfMonth(dataset.dateRange.end);
+    const monthEnd = endOfMonth(dataset.dateRange.end);
+    const prsThisMonth = detectPRs(dataset, 500).filter((pr) =>
+      isWithinInterval(pr.date, { start: monthStart, end: monthEnd })
+    ).length;
+
+    const volumeDirection =
+      stats.volumeChangePercent > 2
+        ? "up"
+        : stats.volumeChangePercent < -2
+          ? "down"
+          : "flat";
+
+    return [
+      {
+        label: "Sessions (4w)",
+        value: stats.sessionsLast4Weeks.toLocaleString(),
+        hint: `${stats.workoutsPerWeekAvg.toFixed(1)}/wk avg`,
+      },
+      {
+        label: "Volume (4w)",
+        value: formatVolume(stats.volumeLast4Weeks),
+        unit: "kg",
+        delta:
+          stats.volumePrior4Weeks > 0
+            ? {
+                value: `${stats.volumeChangePercent > 0 ? "+" : ""}${Math.round(stats.volumeChangePercent)}%`,
+                direction: volumeDirection,
+              }
+            : undefined,
+      },
+      {
+        label: "Current streak",
+        value: streaks.currentWeeks.toLocaleString(),
+        unit: streaks.currentWeeks === 1 ? "week" : "weeks",
+        hint:
+          streaks.longestWeeks > 0
+            ? `best ${streaks.longestWeeks}`
+            : undefined,
+      },
+      {
+        label: "PRs this month",
+        value: prsThisMonth.toLocaleString(),
+        hint: format(dataset.dateRange.end, "MMM yyyy"),
+      },
+    ];
+  }, [dataset]);
+
+  if (loading) return <OverviewLoading />;
+  if (!dataset || !kpis) return <EmptyState />;
+
   return (
-    <Suspense fallback={<p className="p-8 text-center text-sm text-[var(--text-muted)]">Loading…</p>}>
-      <OverviewContent />
-    </Suspense>
+    <PageShell
+      title="Overview"
+      subtitle={`${format(dataset.dateRange.start, "MMM yyyy")} — ${format(dataset.dateRange.end, "MMM yyyy")}`}
+    >
+      <div className="space-y-4 lg:space-y-6">
+        <KpiRow items={kpis} />
+
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-6">
+          <VolumeCard dataset={dataset} />
+          <FrequencyCalendar dataset={dataset} />
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-6">
+          <RecentPRs dataset={dataset} />
+          <TopExercises dataset={dataset} />
+        </div>
+
+        <PeriodCompareCard dataset={dataset} />
+      </div>
+    </PageShell>
   );
 }
