@@ -10,6 +10,10 @@ import { getRangeBounds } from "@/lib/time-range";
 import type { TimeRange } from "@/lib/time-range";
 import { SessionCard } from "@/components/history/session-card";
 import { CalendarView } from "@/components/history/calendar-view";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Button } from "@/components/ui/button";
+import { CalendarDays } from "lucide-react";
+import Link from "next/link";
 
 type ViewMode = "list" | "calendar";
 
@@ -59,9 +63,16 @@ export default function HistoryPage() {
   if (!dataset) {
     return (
       <PageShell title="History">
-        <p className="text-sm text-[var(--text-muted)]">
-          No data yet. Upload your Strong export to see your sessions.
-        </p>
+        <EmptyState
+          icon={CalendarDays}
+          title="No workouts yet"
+          description="Upload your Strong export to browse every session with calendar and list views."
+          action={
+            <Link href="/overview">
+              <Button variant="primary">Get started</Button>
+            </Link>
+          }
+        />
       </PageShell>
     );
   }
@@ -90,9 +101,11 @@ export default function HistoryPage() {
       }
     >
       {filteredSessions.length === 0 ? (
-        <p className="text-sm text-[var(--text-muted)]">
-          No sessions in this range.
-        </p>
+        <EmptyState
+          icon={CalendarDays}
+          title="No sessions in this range"
+          description="Try widening the time range to see more sessions."
+        />
       ) : view === "calendar" ? (
         <CalendarView sessions={filteredSessions} />
       ) : (

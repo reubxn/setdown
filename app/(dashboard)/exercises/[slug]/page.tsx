@@ -3,10 +3,13 @@
 import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { Dumbbell, SearchX } from "lucide-react";
 import { useDataset } from "@/context/dataset-context";
 import { exerciseFromSlug } from "@/lib/parse-strong-csv";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardHeader, CardBody } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Button } from "@/components/ui/button";
 import { ExerciseDetailHeader } from "@/components/exercises/exercise-detail-header";
 import {
   OneRMChart,
@@ -89,18 +92,53 @@ export default function ExerciseDetailPage() {
     );
   }
 
-  if (!dataset || !exerciseName) {
+  if (!dataset) {
+    return (
+      <PageShell title="Exercise">
+        <EmptyState
+          icon={Dumbbell}
+          title="No data yet"
+          description="Upload your Strong export to see this exercise."
+          action={
+            <Link href="/overview">
+              <Button variant="primary">Get started</Button>
+            </Link>
+          }
+        />
+      </PageShell>
+    );
+  }
+
+  if (!exerciseName) {
     return (
       <PageShell title="Exercise not found">
-        <p className="text-sm text-[var(--text-muted)]">
-          We couldn&apos;t find that exercise in your dataset.
-        </p>
-        <Link
-          href="/exercises"
-          className="mt-3 inline-block text-sm text-[var(--accent)]"
-        >
-          ← All exercises
-        </Link>
+        <EmptyState
+          icon={SearchX}
+          title="Exercise not found"
+          description="We couldn't find that exercise in your dataset."
+          action={
+            <Link href="/exercises">
+              <Button variant="secondary">Back to exercises</Button>
+            </Link>
+          }
+        />
+      </PageShell>
+    );
+  }
+
+  if (allSets.length === 0) {
+    return (
+      <PageShell title={exerciseName}>
+        <EmptyState
+          icon={Dumbbell}
+          title="No sets recorded for this exercise"
+          description="Once you log a session containing this exercise, your 1RM curve and history will appear here."
+          action={
+            <Link href="/exercises">
+              <Button variant="secondary">Back to exercises</Button>
+            </Link>
+          }
+        />
       </PageShell>
     );
   }

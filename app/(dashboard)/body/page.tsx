@@ -6,7 +6,7 @@ import { useAuth } from "@/context/auth-context";
 import { BodyLog } from "@/components/analytics/body-log";
 import { LoginModal } from "@/components/auth/login-modal";
 import { Button } from "@/components/ui/button";
-import { Card, CardBody, CardHeader } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export default function BodyPage() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -29,28 +29,16 @@ export default function BodyPage() {
         <BodyLog />
       ) : (
         <>
-          <Card>
-            <CardHeader
-              title={
-                <span className="flex items-center gap-2">
-                  <Lock className="h-4 w-4 text-[var(--text-muted)]" aria-hidden />
-                  Sign in to log measurements
-                </span>
-              }
-            />
-            <CardBody>
-              <p className="text-sm text-[var(--text-secondary)]">
-                Body measurements are saved to your account so they sync across
-                devices. Workouts can stay on this device — measurements
-                can&apos;t.
-              </p>
-              <div className="mt-4">
-                <Button onClick={() => setLoginOpen(true)}>
-                  Sign in to continue
-                </Button>
-              </div>
-            </CardBody>
-          </Card>
+          <EmptyState
+            icon={Lock}
+            title="Sign in to log measurements"
+            description="Body measurements save to your account so they sync across devices. Workouts can stay on this device — measurements can't."
+            action={
+              <Button onClick={() => setLoginOpen(true)}>
+                Sign in to continue
+              </Button>
+            }
+          />
           <LoginModal
             open={loginOpen}
             onClose={() => setLoginOpen(false)}

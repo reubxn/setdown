@@ -3,10 +3,12 @@
 import { useMemo } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, CalendarDays, SearchX } from "lucide-react";
 import { useDataset } from "@/context/dataset-context";
 import { PageShell } from "@/components/layout/page-shell";
 import { SessionDetail } from "@/components/history/session-detail";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Button } from "@/components/ui/button";
 
 export default function SessionDetailPage() {
   const { sessionId } = useParams<{ sessionId: string }>();
@@ -21,7 +23,16 @@ export default function SessionDetailPage() {
   if (!dataset) {
     return (
       <PageShell title="Session">
-        <p className="text-sm text-[var(--text-muted)]">No data loaded.</p>
+        <EmptyState
+          icon={CalendarDays}
+          title="No data yet"
+          description="Upload your Strong export to view session details."
+          action={
+            <Link href="/overview">
+              <Button variant="primary">Get started</Button>
+            </Link>
+          }
+        />
       </PageShell>
     );
   }
@@ -40,9 +51,16 @@ export default function SessionDetailPage() {
           </Link>
         }
       >
-        <p className="text-sm text-[var(--text-muted)]">
-          We couldn’t find that session.
-        </p>
+        <EmptyState
+          icon={SearchX}
+          title="Session not found"
+          description="We couldn't find that session in your dataset."
+          action={
+            <Link href="/history">
+              <Button variant="secondary">Back to history</Button>
+            </Link>
+          }
+        />
       </PageShell>
     );
   }
