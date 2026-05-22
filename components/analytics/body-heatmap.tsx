@@ -4,9 +4,13 @@ import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { Card, CardHeader, CardBody } from "@/components/ui/card";
 import { SegmentedControl } from "@/components/ui/segmented-control";
-import { buildHeatmapData } from "@/lib/derive/body-heatmap";
+import {
+  buildHeatmapData,
+  buildExerciseHeatmapData,
+  type HeatmapEntry,
+} from "@/lib/derive/body-heatmap";
 import { colors } from "@/lib/design-tokens";
-import type { WorkoutDataset } from "@/lib/types";
+import type { WorkoutDataset, WorkoutSet } from "@/lib/types";
 
 const Model = dynamic(() => import("react-body-highlighter"), { ssr: false });
 
@@ -20,19 +24,57 @@ const HIGHLIGHT_RAMP = [
   colors.accent,
 ];
 
-export function BodyHeatmap({ dataset }: { dataset: WorkoutDataset }) {
+interface CommonProps {
+  title?: string;
+  subtitle?: string;
+  maxWidth?: number;
+}
+
+interface DatasetProps extends CommonProps {
+  dataset: WorkoutDataset;
+  exerciseNames?: never;
+  sets?: never;
+}
+
+interface SetsProps extends CommonProps {
+  sets: WorkoutSet[];
+  dataset?: never;
+  exerciseNames?: never;
+}
+
+interface ExerciseProps extends CommonProps {
+  exerciseNames: string[];
+  dataset?: never;
+  sets?: never;
+}
+
+type Props = DatasetProps | SetsProps | ExerciseProps;
+
+export function BodyHeatmap(props: Props) {
   const [view, setView] = useState<View>("anterior");
-  const sets = useMemo(
-    () => dataset.sessions.flatMap((s) => s.sets),
-    [dataset.sessions],
-  );
-  const data = useMemo(() => buildHeatmapData({ sets }), [sets]);
+
+  const data = useMemo<HeatmapEntry[]>(() => {
+    if ("exerciseNames" in props && props.exerciseNames) {
+      return buildExerciseHeatmapData(props.exerciseNames);
+    }
+    if ("sets" in props && props.sets) {
+      return buildHeatmapData({ sets: props.sets });
+    }
+    if ("dataset" in props && props.dataset) {
+      return buildHeatmapData({
+        sets: props.dataset.sessions.flatMap((s) => s.sets),
+      });
+    }
+    return [];
+  }, [props]);
+
+  const maxWidth = props.maxWidth ?? 340;
 
   return (
-    <Card>
+    <Card className="flex h-full flex-col">
       <CardHeader
-        title="Muscle map"
-        subtitle="Volume by muscle group across the loaded range"
+        title={props.title ?? "Muscles"}
+        subtitle={props.subtitle}
         action={
           <SegmentedControl
             value={view}
@@ -41,24 +83,23 @@ export function BodyHeatmap({ dataset }: { dataset: WorkoutDataset }) {
               { value: "anterior", label: "Front" },
               { value: "posterior", label: "Back" },
             ]}
+            size="sm"
           />
         }
       />
-      <CardBody>
+      <CardBody className="flex flex-1 items-center justify-center">
         {data.length === 0 ? (
-          <div className="flex h-[300px] items-center justify-center text-sm text-[var(--text-muted)]">
-            No data to show.
+          <div className="flex h-full min-h-[300px] items-center justify-center text-sm text-[var(--text-muted)]">
+            No muscles to show.
           </div>
         ) : (
-          <div className="flex justify-center">
-            <Model
-              data={data}
-              type={view}
-              bodyColor="var(--bg-sunken)"
-              highlightedColors={HIGHLIGHT_RAMP}
-              style={{ width: "100%", maxWidth: 340, padding: 8 }}
-            />
-          </div>
+          <Model
+            data={data}
+            type={view}
+            bodyColor="var(--bg-sunken)"
+            highlightedColors={HIGHLIGHT_RAMP}
+            style={{ width: "100%", maxWidth, padding: 8 }}
+          />
         )}
       </CardBody>
     </Card>

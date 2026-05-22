@@ -90,38 +90,35 @@ export function FrequencyCalendar({ dataset }: { dataset: WorkoutDataset }) {
         title="Workout frequency"
         subtitle={`${totalSessions} sessions in the last year`}
       />
-      <div className="overflow-x-auto">
-        <div className="inline-block min-w-full">
-          <div
-            className="grid gap-[2px] text-[10px] text-[var(--text-muted)]"
-            style={{ gridTemplateColumns: `repeat(${WEEKS}, minmax(0, 1fr))` }}
-          >
-            {monthLabels.map((m) => (
-              <div
-                key={`${m.col}-${m.label}`}
-                style={{ gridColumnStart: m.col + 1 }}
-                className="pb-1"
-              >
-                {m.label}
-              </div>
-            ))}
-          </div>
-          <div
-            className="grid gap-[2px]"
-            style={{
-              gridTemplateColumns: `repeat(${WEEKS}, minmax(0, 1fr))`,
-              gridAutoFlow: "column",
-              gridTemplateRows: "repeat(7, minmax(0, 1fr))",
-            }}
-          >
-            {cells.map((cell, i) => (
-              <div
-                key={i}
-                title={`${format(cell.date, "MMM d, yyyy")} — ${cell.count} session${cell.count === 1 ? "" : "s"}`}
-                className={`aspect-square w-full rounded-[2px] ${intensityClass[cell.intensity]}`}
-              />
-            ))}
-          </div>
+      <div className="w-full">
+        <div
+          className="mb-1 grid gap-[3px] text-[10px] text-[var(--text-muted)]"
+          style={{ gridTemplateColumns: `repeat(${WEEKS}, minmax(0, 1fr))` }}
+        >
+          {monthLabels.map((m) => (
+            <div
+              key={`${m.col}-${m.label}`}
+              style={{ gridColumnStart: m.col + 1 }}
+            >
+              {m.label}
+            </div>
+          ))}
+        </div>
+        <div
+          className="grid gap-[3px]"
+          style={{
+            gridTemplateColumns: `repeat(${WEEKS}, minmax(0, 1fr))`,
+            gridAutoFlow: "column",
+            gridTemplateRows: "repeat(7, minmax(0, 1fr))",
+          }}
+        >
+          {cells.map((cell, i) => (
+            <div
+              key={i}
+              title={`${format(cell.date, "MMM d, yyyy")} — ${cell.count} session${cell.count === 1 ? "" : "s"}`}
+              className={`aspect-square w-full rounded-[2px] ${intensityClass[cell.intensity]}`}
+            />
+          ))}
         </div>
       </div>
       <div className="mt-3 flex items-center justify-end gap-2 text-[10px] text-[var(--text-muted)]">

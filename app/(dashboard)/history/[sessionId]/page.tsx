@@ -7,6 +7,7 @@ import { ArrowLeft, CalendarDays, SearchX } from "lucide-react";
 import { useDataset } from "@/context/dataset-context";
 import { PageShell } from "@/components/layout/page-shell";
 import { SessionDetail } from "@/components/history/session-detail";
+import { BodyHeatmap } from "@/components/analytics/body-heatmap";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 import { SessionDetailSkeleton } from "@/components/loading/page-skeletons";
@@ -84,6 +85,13 @@ export default function SessionDetailPage() {
       }
       className="pb-8"
     >
+      <div className="mb-6">
+        <BodyHeatmap
+          exerciseNames={[...new Set(session.sets.map((s) => s.exerciseName))]}
+          title="Trained in this session"
+          subtitle="Primary in solid, secondary lighter"
+        />
+      </div>
       <SessionDetail session={session} dataset={dataset} />
     </PageShell>
   );

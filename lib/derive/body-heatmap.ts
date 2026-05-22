@@ -23,24 +23,28 @@ const GROUP_TO_MUSCLES: Record<MuscleGroup, Muscle[]> = {
   other: [],
 };
 
+export interface HeatmapEntry {
+  name: string;
+  muscles: Muscle[];
+  frequency: number;
+}
+
 export interface HeatmapInput {
   sets: WorkoutSet[];
-  weightingByVolume?: boolean;
+  /** "volume" weights by weight × reps. "count" weights by set count. */
+  mode?: "volume" | "count";
 }
 
 /**
- * Aggregate volume (or set count) per anatomical muscle from a set list,
- * then bucket into 1-5 frequency bands suitable for the highlighter's color array.
+ * Aggregate volume per muscle group across a set list and bucket into 1–5
+ * frequency bands for the highlighter's color ramp.
  *
- * Returns data shaped for `<Model data={...} />`. Each entry maps an exercise
- * name to the muscles it works; the component sums these into a per-muscle
- * frequency. We synthesize one entry per (exercise, muscle) repeat so heavier
- * exercises light up brighter.
+ * Use for dashboards summarising a date range.
  */
 export function buildHeatmapData({
   sets,
-  weightingByVolume = true,
-}: HeatmapInput) {
+  mode = "volume",
+}: HeatmapInput): HeatmapEntry[] {
   if (sets.length === 0) return [];
 
   const volumePerGroup = new Map<MuscleGroup, number>();
@@ -55,7 +59,7 @@ export function buildHeatmapData({
     if (!exerciseGroups.has(s.exerciseName)) {
       exerciseGroups.set(s.exerciseName, groups);
     }
-    const contribution = weightingByVolume ? s.weight * s.reps : 1;
+    const contribution = mode === "volume" ? s.weight * s.reps : 1;
     for (const g of groups) {
       volumePerGroup.set(g, (volumePerGroup.get(g) ?? 0) + contribution);
     }
@@ -63,7 +67,7 @@ export function buildHeatmapData({
 
   const max = Math.max(...volumePerGroup.values(), 1);
 
-  const data: { name: string; muscles: Muscle[]; frequency: number }[] = [];
+  const data: HeatmapEntry[] = [];
   for (const [exerciseName, groups] of exerciseGroups) {
     const muscles: Muscle[] = [];
     let avgIntensity = 0;
@@ -79,5 +83,36 @@ export function buildHeatmapData({
     data.push({ name: exerciseName, muscles, frequency });
   }
 
+  return data;
+}
+
+/**
+ * For a single exercise: render primary muscles at full intensity (5),
+ * secondary at half (2). Used on /exercises/[slug] and /history/[sessionId].
+ *
+ * Accepts a list of exercise names — useful for "session view" where multiple
+ * exercises contribute. If a muscle appears as primary in one entry and
+ * secondary in another, primary wins.
+ */
+export function buildExerciseHeatmapData(exerciseNames: string[]): HeatmapEntry[] {
+  if (exerciseNames.length === 0) return [];
+
+  const data: HeatmapEntry[] = [];
+  for (const name of exerciseNames) {
+    const assignment = lookupMuscles(name);
+    const primary = GROUP_TO_MUSCLES[assignment.primary];
+    const secondary = assignment.secondary.flatMap((g) => GROUP_TO_MUSCLES[g]);
+
+    if (primary.length > 0) {
+      data.push({ name: `${name} — primary`, muscles: primary, frequency: 5 });
+    }
+    if (secondary.length > 0) {
+      data.push({
+        name: `${name} — secondary`,
+        muscles: secondary.filter((m) => !primary.includes(m)),
+        frequency: 2,
+      });
+    }
+  }
   return data;
 }
