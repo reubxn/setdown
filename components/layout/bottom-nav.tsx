@@ -5,15 +5,15 @@ import { usePathname } from "next/navigation";
 import {
   Dumbbell,
   History,
-  Home,
-  MoreHorizontal,
+  LayoutDashboard,
+  Settings,
   Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/auth-context";
 
 const items = [
-  { href: "/overview", label: "Home", icon: Home },
+  { href: "/overview", label: "Overview", icon: LayoutDashboard },
   { href: "/exercises", label: "Exercises", icon: Dumbbell },
   { href: "/history", label: "History", icon: History },
 ];
@@ -24,7 +24,7 @@ export function BottomNav() {
 
   const tail = isAuthenticated
     ? { href: "/coach", label: "Coach", icon: Sparkles }
-    : { href: "/settings", label: "More", icon: MoreHorizontal };
+    : { href: "/settings", label: "Settings", icon: Settings };
 
   const all = [...items, tail];
 
