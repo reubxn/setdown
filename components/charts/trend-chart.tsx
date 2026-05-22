@@ -16,6 +16,7 @@ import {
 import type { ChartPoint, ExerciseChartPoint } from "@/lib/chart-series";
 import type { SelectablePoint } from "@/lib/chart-selection";
 import { SelectableChartFrame } from "./chart-range-select";
+import { usePreferences } from "@/context/preferences-context";
 import {
   DEFAULT_PROJECTION_DAYS,
   linearFit,
@@ -66,6 +67,7 @@ export function VolumeAreaChart({
   data: ChartPoint[];
   chartId?: string;
 }) {
+  const { prefs } = usePreferences();
   if (!hasValues(data)) return null;
   const selectable = toSelectable(data);
   const tickFmt = axisTickFormatter(data);
@@ -73,7 +75,7 @@ export function VolumeAreaChart({
   return (
     <SelectableChartFrame
       data={selectable}
-      formatValue={(v) => `${Math.round(v).toLocaleString()} kg·reps`}
+      formatValue={(v) => `${Math.round(v).toLocaleString()} ${prefs.units}·reps`}
       valueLabel=""
     >
       {({ chartHandlers, referenceArea }) => (
@@ -113,7 +115,7 @@ export function VolumeAreaChart({
                 payload?.[0]?.payload?.label ?? ""
               }
               formatter={(v: number) => [
-                `${Math.round(v).toLocaleString()} kg·reps`,
+                `${Math.round(v).toLocaleString()} ${prefs.units}·reps`,
                 "Volume",
               ]}
             />
@@ -441,6 +443,7 @@ export function ExerciseLineChart({
 }
 
 export function TopExercisesBarChart({ data }: { data: ChartPoint[] }) {
+  const { prefs } = usePreferences();
   if (!hasValues(data)) return null;
 
   return (
@@ -466,7 +469,7 @@ export function TopExercisesBarChart({ data }: { data: ChartPoint[] }) {
         <Tooltip
           contentStyle={tooltipStyle}
           formatter={(v: number) => [
-            `${Math.round(v).toLocaleString()} kg·reps`,
+            `${Math.round(v).toLocaleString()} ${prefs.units}·reps`,
             "Volume",
           ]}
         />

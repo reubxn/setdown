@@ -43,14 +43,14 @@ export interface PeriodCompare {
   };
 }
 
-function bounds(reference: Date, period: ComparePeriod) {
+function bounds(reference: Date, period: ComparePeriod, weekStartsOn: 0 | 1) {
   switch (period) {
     case "week":
       return {
-        currentStart: startOfWeek(reference, { weekStartsOn: 1 }),
-        currentEnd: endOfWeek(reference, { weekStartsOn: 1 }),
-        previousStart: startOfWeek(subWeeks(reference, 1), { weekStartsOn: 1 }),
-        previousEnd: endOfWeek(subWeeks(reference, 1), { weekStartsOn: 1 }),
+        currentStart: startOfWeek(reference, { weekStartsOn }),
+        currentEnd: endOfWeek(reference, { weekStartsOn }),
+        previousStart: startOfWeek(subWeeks(reference, 1), { weekStartsOn }),
+        previousEnd: endOfWeek(subWeeks(reference, 1), { weekStartsOn }),
       };
     case "month":
       return {
@@ -109,10 +109,12 @@ function pct(current: number, previous: number): number {
 
 export function periodCompare(
   dataset: WorkoutDataset,
-  period: ComparePeriod
+  period: ComparePeriod,
+  opts: { weekStartsOn?: 0 | 1 } = {},
 ): PeriodCompare {
+  const weekStartsOn = opts.weekStartsOn ?? 1;
   const ref = dataset.dateRange.end;
-  const b = bounds(ref, period);
+  const b = bounds(ref, period, weekStartsOn);
   const current = bucket(dataset, b.currentStart, b.currentEnd);
   const previous = bucket(dataset, b.previousStart, b.previousEnd);
 

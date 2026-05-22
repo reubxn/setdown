@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Dumbbell, SearchX } from "lucide-react";
 import { useDataset } from "@/context/dataset-context";
+import { usePreferences } from "@/context/preferences-context";
 import { exerciseFromSlug } from "@/lib/parse-strong-csv";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardHeader, CardBody } from "@/components/ui/card";
@@ -31,6 +32,7 @@ const PRIMARY_COLOR = "var(--accent)";
 export default function ExerciseDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const { dataset, loading } = useDataset();
+  const { prefs } = usePreferences();
   const [compare, setCompare] = useState<string>("");
 
   const exerciseName = useMemo(() => {
@@ -194,14 +196,14 @@ export default function ExerciseDetailPage() {
         </Card>
 
         <Card padding="md">
-          <CardHeader title="Volume per session" subtitle="kg · reps" />
+          <CardHeader title="Volume per session" subtitle={`${prefs.units} · reps`} />
           <CardBody>
             {volumeChartData.length > 0 ? (
               <div className="h-64">
                 <ExerciseLineChart
                   data={volumeChartData}
                   dataKey="volume"
-                  label="kg·reps"
+                  label={`${prefs.units}·reps`}
                   color="#00C2FF"
                 />
               </div>
@@ -224,7 +226,7 @@ export default function ExerciseDetailPage() {
                 <ExerciseLineChart
                   data={volumeChartData}
                   dataKey="maxWeight"
-                  label="kg"
+                  label={prefs.units}
                 />
               </div>
             ) : (

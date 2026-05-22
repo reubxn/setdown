@@ -1,49 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Card, CardHeader, CardBody } from "@/components/ui/card";
 import { SegmentedControl } from "@/components/ui/segmented-control";
-
-const STORAGE_KEY = "setdown-preferences-v1";
-
-type Units = "kg" | "lb";
-type WeekStart = "mon" | "sun";
-
-interface Preferences {
-  units: Units;
-  weekStart: WeekStart;
-}
-
-const DEFAULTS: Preferences = {
-  units: "kg",
-  weekStart: "mon",
-};
-
-function load(): Preferences {
-  if (typeof window === "undefined") return DEFAULTS;
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return DEFAULTS;
-    const parsed = JSON.parse(raw) as Partial<Preferences>;
-    return { ...DEFAULTS, ...parsed };
-  } catch {
-    return DEFAULTS;
-  }
-}
+import {
+  usePreferences,
+  type Units,
+  type WeekStart,
+} from "@/context/preferences-context";
 
 export function PreferencesSection() {
-  const [prefs, setPrefs] = useState<Preferences>(DEFAULTS);
-  const [hydrated, setHydrated] = useState(false);
-
-  useEffect(() => {
-    setPrefs(load());
-    setHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (!hydrated) return;
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
-  }, [prefs, hydrated]);
+  const { prefs, setUnits, setWeekStart } = usePreferences();
 
   return (
     <Card>
@@ -54,7 +20,7 @@ export function PreferencesSection() {
             <SegmentedControl<Units>
               size="sm"
               value={prefs.units}
-              onChange={(v) => setPrefs((p) => ({ ...p, units: v }))}
+              onChange={setUnits}
               options={[
                 { value: "kg", label: "kg" },
                 { value: "lb", label: "lb" },
@@ -67,7 +33,7 @@ export function PreferencesSection() {
             <SegmentedControl<WeekStart>
               size="sm"
               value={prefs.weekStart}
-              onChange={(v) => setPrefs((p) => ({ ...p, weekStart: v }))}
+              onChange={setWeekStart}
               options={[
                 { value: "mon", label: "Mon" },
                 { value: "sun", label: "Sun" },

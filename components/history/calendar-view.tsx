@@ -15,6 +15,7 @@ import {
 } from "date-fns";
 import type { WorkoutSession } from "@/lib/types";
 import { formatDuration, formatVolume } from "@/lib/metrics";
+import { usePreferences } from "@/context/preferences-context";
 
 function groupByMonth(sessions: WorkoutSession[]): Map<string, WorkoutSession[]> {
   const map = new Map<string, WorkoutSession[]>();
@@ -34,8 +35,9 @@ function MonthGrid({
   monthDate: Date;
   sessions: WorkoutSession[];
 }) {
-  const start = startOfWeek(startOfMonth(monthDate), { weekStartsOn: 1 });
-  const end = endOfWeek(endOfMonth(monthDate), { weekStartsOn: 1 });
+  const { weekStartsOn } = usePreferences();
+  const start = startOfWeek(startOfMonth(monthDate), { weekStartsOn });
+  const end = endOfWeek(endOfMonth(monthDate), { weekStartsOn });
   const days = eachDayOfInterval({ start, end });
 
   const byDay = useMemo(() => {
@@ -50,9 +52,9 @@ function MonthGrid({
   }, [sessions]);
 
   const weekdayLabels = useMemo(() => {
-    const base = startOfWeek(new Date(), { weekStartsOn: 1 });
+    const base = startOfWeek(new Date(), { weekStartsOn });
     return Array.from({ length: 7 }, (_, i) => format(addDays(base, i), "EEEEE"));
-  }, []);
+  }, [weekStartsOn]);
 
   return (
     <div className="rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-4">

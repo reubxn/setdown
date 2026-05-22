@@ -5,6 +5,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import type { WorkoutDataset, WorkoutSession, WorkoutSet } from "@/lib/types";
 import { epley1RM, formatDuration, formatVolume } from "@/lib/metrics";
+import { usePreferences } from "@/context/preferences-context";
 
 function groupByExercise(session: WorkoutSession): Array<{
   exerciseName: string;
@@ -64,6 +65,7 @@ export function SessionDetail({
   dataset: WorkoutDataset;
 }) {
   const groups = useMemo(() => groupByExercise(session), [session]);
+  const { prefs } = usePreferences();
 
   return (
     <div className="space-y-6">
@@ -72,7 +74,7 @@ export function SessionDetail({
         <Stat label="Duration" value={formatDuration(session.durationMinutes)} />
         <Stat
           label="Volume"
-          value={`${formatVolume(session.totalVolume)} kg·reps`}
+          value={`${formatVolume(session.totalVolume)} ${prefs.units}·reps`}
           accent
         />
         <Stat
@@ -112,7 +114,7 @@ export function SessionDetail({
                 <span>
                   Max{" "}
                   <span className="tabular-nums text-[var(--text-secondary)]">
-                    {group.maxWeight} kg
+                    {group.maxWeight} {prefs.units}
                   </span>
                 </span>
                 <span>
@@ -124,7 +126,7 @@ export function SessionDetail({
                 <span>
                   Est 1RM{" "}
                   <span className="tabular-nums text-[var(--text-secondary)]">
-                    {group.topEpley > 0 ? `${Math.round(group.topEpley)} kg` : "—"}
+                    {group.topEpley > 0 ? `${Math.round(group.topEpley)} ${prefs.units}` : "—"}
                   </span>
                 </span>
               </div>
@@ -136,7 +138,7 @@ export function SessionDetail({
                   >
                     <span className="text-[var(--text-muted)]">{setLabel(set)}</span>
                     <span className="tabular-nums text-[var(--text-primary)]">
-                      {set.weight} kg × {set.reps}
+                      {set.weight} {prefs.units} × {set.reps}
                       {set.volume > 0 ? (
                         <span className="ml-2 text-[var(--text-muted)]">
                           ({Math.round(set.volume)})

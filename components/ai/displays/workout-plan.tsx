@@ -1,6 +1,7 @@
 "use client";
 
 import type { ChatDisplay } from "@/lib/ai/display";
+import { usePreferences } from "@/context/preferences-context";
 
 type WorkoutPlanProps = Extract<ChatDisplay, { kind: "workout_plan" }>;
 
@@ -9,6 +10,7 @@ export function WorkoutPlanDisplay({
   exercises,
   notes,
 }: WorkoutPlanProps) {
+  const { prefs } = usePreferences();
   return (
     <div className="rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-3">
       <div className="mb-2 flex items-baseline justify-between gap-2">
@@ -32,7 +34,7 @@ export function WorkoutPlanDisplay({
                   <>
                     {" "}
                     <span className="text-[var(--text-muted)]">@</span>{" "}
-                    {ex.weight} kg
+                    {ex.weight} {prefs.units}
                   </>
                 ) : null}
               </span>

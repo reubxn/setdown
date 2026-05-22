@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatVolume } from "@/lib/metrics";
 import { slugifyExercise } from "@/lib/parse-strong-csv";
 import type { Bucket } from "@/lib/derive/muscle-mapping";
+import { usePreferences } from "@/context/preferences-context";
 
 export interface ExerciseRow {
   name: string;
@@ -60,6 +61,7 @@ function Sparkline({ values }: { values: number[] }) {
 }
 
 export function ExerciseCard({ row }: { row: ExerciseRow }) {
+  const { prefs } = usePreferences();
   const lastLabel = row.lastPerformed
     ? formatDistanceToNowStrict(row.lastPerformed, { addSuffix: true })
     : "Never";
@@ -85,7 +87,7 @@ export function ExerciseCard({ row }: { row: ExerciseRow }) {
           <div>
             <div className="text-[var(--text-muted)]">Max</div>
             <div className="mt-0.5 font-medium tabular-nums text-[var(--text-primary)]">
-              {row.maxWeight > 0 ? `${row.maxWeight} kg` : "—"}
+              {row.maxWeight > 0 ? `${row.maxWeight} ${prefs.units}` : "—"}
             </div>
           </div>
           <div>

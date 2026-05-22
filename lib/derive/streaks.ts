@@ -7,17 +7,24 @@ export interface StreakStats {
   totalActiveWeeks: number;
 }
 
-function uniqueActiveWeekKeys(dataset: WorkoutDataset): number[] {
+function uniqueActiveWeekKeys(
+  dataset: WorkoutDataset,
+  weekStartsOn: 0 | 1,
+): number[] {
   const set = new Set<number>();
   for (const s of dataset.sessions) {
-    const w = startOfWeek(s.date, { weekStartsOn: 1 }).getTime();
+    const w = startOfWeek(s.date, { weekStartsOn }).getTime();
     set.add(w);
   }
   return [...set].sort((a, b) => a - b);
 }
 
-export function computeStreaks(dataset: WorkoutDataset): StreakStats {
-  const weeks = uniqueActiveWeekKeys(dataset);
+export function computeStreaks(
+  dataset: WorkoutDataset,
+  opts: { weekStartsOn?: 0 | 1 } = {},
+): StreakStats {
+  const weekStartsOn = opts.weekStartsOn ?? 1;
+  const weeks = uniqueActiveWeekKeys(dataset, weekStartsOn);
   if (weeks.length === 0) {
     return { currentWeeks: 0, longestWeeks: 0, totalActiveWeeks: 0 };
   }
@@ -28,7 +35,7 @@ export function computeStreaks(dataset: WorkoutDataset): StreakStats {
     const gap = differenceInCalendarWeeks(
       new Date(weeks[i]),
       new Date(weeks[i - 1]),
-      { weekStartsOn: 1 }
+      { weekStartsOn }
     );
     if (gap === 1) {
       run += 1;
@@ -39,13 +46,13 @@ export function computeStreaks(dataset: WorkoutDataset): StreakStats {
   }
 
   const thisWeek = startOfWeek(dataset.dateRange.end, {
-    weekStartsOn: 1,
+    weekStartsOn,
   }).getTime();
   const lastActive = weeks[weeks.length - 1];
   const gapFromNow = differenceInCalendarWeeks(
     new Date(thisWeek),
     new Date(lastActive),
-    { weekStartsOn: 1 }
+    { weekStartsOn }
   );
 
   let current = 0;
@@ -55,7 +62,7 @@ export function computeStreaks(dataset: WorkoutDataset): StreakStats {
       const gap = differenceInCalendarWeeks(
         new Date(weeks[i]),
         new Date(weeks[i - 1]),
-        { weekStartsOn: 1 }
+        { weekStartsOn }
       );
       if (gap === 1) current += 1;
       else break;

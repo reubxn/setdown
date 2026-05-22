@@ -10,6 +10,7 @@ import {
 } from "recharts";
 import { format } from "date-fns";
 import type { OneRMPoint } from "@/lib/derive/one-rm";
+import { usePreferences } from "@/context/preferences-context";
 
 const tooltipStyle = {
   backgroundColor: "var(--bg-elevated)",
@@ -32,6 +33,7 @@ export function OneRMChart({
   series: OneRMSeries[];
   height?: number;
 }) {
+  const { prefs } = usePreferences();
   const allDates = new Set<string>();
   for (const s of series) {
     for (const p of s.points) allDates.add(p.date.toISOString());
@@ -86,7 +88,7 @@ export function OneRMChart({
               format(new Date(iso), "MMM d, yyyy")
             }
             formatter={(v: number, name: string) => [
-              `${v.toFixed(1)} kg`,
+              `${v.toFixed(1)} ${prefs.units}`,
               name,
             ]}
           />

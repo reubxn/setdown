@@ -13,6 +13,7 @@ import {
 import { useRouter } from "next/navigation";
 import { Card, CardHeader } from "@/components/ui/card";
 import type { WorkoutDataset, WorkoutSession } from "@/lib/types";
+import { usePreferences } from "@/context/preferences-context";
 
 const DAY_MS = 86_400_000;
 
@@ -44,6 +45,7 @@ const intensityClass: Record<Cell["intensity"], string> = {
 
 export function FrequencyCalendar({ dataset }: { dataset: WorkoutDataset }) {
   const router = useRouter();
+  const { prefs, weekStartsOn } = usePreferences();
   const today = dataset.dateRange.end;
   const todayYear = today.getFullYear();
   const earliestYear = dataset.dateRange.start.getFullYear();
@@ -66,7 +68,7 @@ export function FrequencyCalendar({ dataset }: { dataset: WorkoutDataset }) {
     const rangeStart = startOfYear(new Date(year, 0, 1));
     const rangeEnd = endOfYear(new Date(year, 0, 1));
 
-    const gridStart = startOfWeek(rangeStart, { weekStartsOn: 1 });
+    const gridStart = startOfWeek(rangeStart, { weekStartsOn });
     const totalDays = differenceInCalendarDays(rangeEnd, gridStart) + 1;
     const weekCount = Math.ceil(totalDays / 7);
     const days = weekCount * 7;
@@ -98,7 +100,7 @@ export function FrequencyCalendar({ dataset }: { dataset: WorkoutDataset }) {
       });
     }
     return { cells: out, weeks: weekCount };
-  }, [sessionsByDay, year, today]);
+  }, [sessionsByDay, year, today, weekStartsOn]);
 
   const totalSessions = cells.reduce((s, c) => s + (c.inRange ? c.count : 0), 0);
   const totalVolume = cells.reduce((s, c) => s + (c.inRange ? c.volume : 0), 0);
@@ -139,7 +141,7 @@ export function FrequencyCalendar({ dataset }: { dataset: WorkoutDataset }) {
     <Card padding="lg" className="@container">
       <CardHeader
         title="Workout frequency"
-        subtitle={`${totalSessions} sessions in ${year} · ${Math.round(totalVolume).toLocaleString()} kg`}
+        subtitle={`${totalSessions} sessions in ${year} · ${Math.round(totalVolume).toLocaleString()} ${prefs.units}`}
         action={
           <select
             aria-label="Year"
@@ -188,7 +190,7 @@ export function FrequencyCalendar({ dataset }: { dataset: WorkoutDataset }) {
                 ? dateLabel
                 : cell.count === 0
                   ? `${dateLabel} — No workout`
-                  : `${dateLabel} — ${cell.count} session${cell.count === 1 ? "" : "s"} · ${Math.round(cell.volume).toLocaleString()} kg`;
+                  : `${dateLabel} — ${cell.count} session${cell.count === 1 ? "" : "s"} · ${Math.round(cell.volume).toLocaleString()} ${prefs.units}`;
               const clickable = cell.inRange && cell.session;
               return clickable ? (
                 <button

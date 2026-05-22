@@ -6,6 +6,7 @@ import { formatDistanceToNowStrict } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { bucketOf } from "@/lib/derive/muscle-mapping";
 import type { OneRMPoint } from "@/lib/derive/one-rm";
+import { usePreferences } from "@/context/preferences-context";
 
 export interface DetailHeaderProps {
   name: string;
@@ -29,6 +30,7 @@ export function ExerciseDetailHeader({
   pr,
   maxWeight,
 }: DetailHeaderProps) {
+  const { prefs } = usePreferences();
   const bucket = bucketOf(name);
   const lastLabel = lastPerformed
     ? formatDistanceToNowStrict(lastPerformed, { addSuffix: true })
@@ -64,7 +66,7 @@ export function ExerciseDetailHeader({
                 Max weight
               </p>
               <p className="text-xl font-semibold tabular-nums text-[var(--text-primary)]">
-                {maxWeight} kg
+                {maxWeight} {prefs.units}
               </p>
             </div>
           )}
@@ -74,7 +76,7 @@ export function ExerciseDetailHeader({
                 Est. 1RM
               </p>
               <p className="text-xl font-semibold tabular-nums text-[var(--accent)]">
-                {Math.round(pr.est1RM)} kg
+                {Math.round(pr.est1RM)} {prefs.units}
               </p>
               <p className="text-[10px] text-[var(--text-muted)]">
                 {pr.weight}×{pr.reps} · Epley

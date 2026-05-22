@@ -44,14 +44,15 @@ export interface ExerciseChartPoint {
 function generateBuckets(
   start: Date,
   end: Date,
-  unit: BucketUnit
+  unit: BucketUnit,
+  weekStartsOn: 0 | 1 = 1,
 ): { start: Date; end: Date; label: string }[] {
   const buckets: { start: Date; end: Date; label: string }[] = [];
   let cursor =
     unit === "day"
       ? startOfDay(start)
       : unit === "week"
-        ? startOfWeek(start, { weekStartsOn: 1 })
+        ? startOfWeek(start, { weekStartsOn })
         : startOfMonth(start);
 
   while (cursor <= end) {
@@ -59,7 +60,7 @@ function generateBuckets(
       unit === "day"
         ? endOfDay(cursor)
         : unit === "week"
-          ? endOfWeek(cursor, { weekStartsOn: 1 })
+          ? endOfWeek(cursor, { weekStartsOn })
           : endOfMonth(cursor);
 
     const label =
@@ -102,13 +103,14 @@ function filteredSessions(
 
 export function volumeTimeSeries(
   dataset: WorkoutDataset,
-  range: TimeRange
+  range: TimeRange,
+  opts: { weekStartsOn?: 0 | 1 } = {},
 ): ChartPoint[] {
   const { start, end } = getRangeBounds(dataset, range);
   const unit = getBucketUnit(range, start, end);
   const sessions = filteredSessions(dataset, range);
 
-  return generateBuckets(start, end, unit).map((bucket) => ({
+  return generateBuckets(start, end, unit, opts.weekStartsOn ?? 1).map((bucket) => ({
     id: bucket.start.toISOString(),
     label: bucket.label,
     date: bucket.label,
@@ -120,13 +122,14 @@ export function volumeTimeSeries(
 
 export function sessionCountSeries(
   dataset: WorkoutDataset,
-  range: TimeRange
+  range: TimeRange,
+  opts: { weekStartsOn?: 0 | 1 } = {},
 ): ChartPoint[] {
   const { start, end } = getRangeBounds(dataset, range);
   const unit = getBucketUnit(range, start, end);
   const sessions = filteredSessions(dataset, range);
 
-  return generateBuckets(start, end, unit).map((bucket) => ({
+  return generateBuckets(start, end, unit, opts.weekStartsOn ?? 1).map((bucket) => ({
     id: bucket.start.toISOString(),
     label: bucket.label,
     date: bucket.label,
@@ -138,13 +141,14 @@ export function sessionCountSeries(
 
 export function durationTimeSeries(
   dataset: WorkoutDataset,
-  range: TimeRange
+  range: TimeRange,
+  opts: { weekStartsOn?: 0 | 1 } = {},
 ): ChartPoint[] {
   const { start, end } = getRangeBounds(dataset, range);
   const unit = getBucketUnit(range, start, end);
   const sessions = filteredSessions(dataset, range);
 
-  return generateBuckets(start, end, unit).map((bucket) => {
+  return generateBuckets(start, end, unit, opts.weekStartsOn ?? 1).map((bucket) => {
     const inBucket = sessionsInBucket(sessions, bucket.start, bucket.end);
     const withDuration = inBucket.filter((s) => s.durationMinutes != null);
     const avg =

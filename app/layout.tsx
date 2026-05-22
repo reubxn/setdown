@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Bebas_Neue } from "next/font/google";
 import { DatasetProvider } from "@/context/dataset-context";
 import { AuthProvider } from "@/context/auth-context";
+import { PreferencesProvider } from "@/context/preferences-context";
 import "./globals.css";
 
 const geist = Geist({
@@ -29,7 +30,9 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className={`${geist.variable} ${bebas.variable} antialiased`}>
         <AuthProvider>
-          <DatasetProvider>{children}</DatasetProvider>
+          <PreferencesProvider>
+            <DatasetProvider>{children}</DatasetProvider>
+          </PreferencesProvider>
         </AuthProvider>
       </body>
     </html>
