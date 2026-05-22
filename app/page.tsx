@@ -7,7 +7,9 @@ import { useDataset } from "@/context/dataset-context";
 import { useAuth } from "@/context/auth-context";
 import { SignInButton } from "@/components/auth/sign-in-button";
 import { Hero } from "@/components/landing/hero";
+import { ExportTutorial } from "@/components/landing/export-tutorial";
 import { PrivacyNote } from "@/components/landing/privacy-note";
+import { DashboardPreview } from "@/components/landing/dashboard-preview";
 
 export default function HomePage() {
   const router = useRouter();
@@ -35,6 +37,8 @@ export default function HomePage() {
       </header>
 
       <Hero />
+      <DashboardPreview />
+      <ExportTutorial />
       <PrivacyNote />
     </main>
   );

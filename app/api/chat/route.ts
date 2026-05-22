@@ -194,7 +194,7 @@ export async function POST(request: Request) {
   //   { type: "text", value: string }
   //   { type: "display", value: ChatDisplay }
   //   { type: "error", value: string }
-  // Stream is consumed by components/ai/chat-panel.tsx.
+  // Stream is consumed by components/ai/chat-view.tsx.
   type ChatEvent =
     | { type: "text"; value: string }
     | { type: "display"; value: ChatDisplay }

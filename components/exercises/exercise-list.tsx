@@ -148,8 +148,8 @@ export function ExerciseList({ dataset }: { dataset: WorkoutDataset }) {
         />
       </div>
 
-      <div className="flex flex-wrap gap-x-6 gap-y-3">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-x-6">
+        <div className="flex min-w-0 items-center gap-2 overflow-x-auto">
           <span className="text-[11px] uppercase tracking-wide text-[var(--text-muted)]">
             Muscle
           </span>
@@ -161,7 +161,7 @@ export function ExerciseList({ dataset }: { dataset: WorkoutDataset }) {
             aria-label="Filter by muscle group"
           />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 items-center gap-2 overflow-x-auto">
           <span className="text-[11px] uppercase tracking-wide text-[var(--text-muted)]">
             Last
           </span>
@@ -173,7 +173,7 @@ export function ExerciseList({ dataset }: { dataset: WorkoutDataset }) {
             aria-label="Filter by last performed"
           />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 items-center gap-2 overflow-x-auto">
           <span className="text-[11px] uppercase tracking-wide text-[var(--text-muted)]">
             Sort
           </span>

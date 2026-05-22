@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  BarChart3,
   Dumbbell,
   History,
-  Home,
+  LayoutDashboard,
   Settings,
   Sparkles,
   User,
@@ -18,22 +19,23 @@ import { SignInButton } from "@/components/auth/sign-in-button";
 interface NavItem {
   href: string;
   label: string;
-  icon: typeof Home;
+  icon: typeof LayoutDashboard;
   authOnly?: boolean;
 }
 
 const baseNav: NavItem[] = [
-  { href: "/overview", label: "Dashboard", icon: Home },
+  { href: "/overview", label: "Overview", icon: LayoutDashboard },
   { href: "/exercises", label: "Exercises", icon: Dumbbell },
   { href: "/history", label: "History", icon: History },
   { href: "/body", label: "Body", icon: User, authOnly: true },
-  { href: "/insights", label: "Insights", icon: Sparkles, authOnly: true },
+  { href: "/insights", label: "Insights", icon: BarChart3, authOnly: true },
+  { href: "/coach", label: "Coach", icon: Sparkles, authOnly: true },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
 
   const items = baseNav.filter((item) => !item.authOnly || isAuthenticated);
 
@@ -77,7 +79,9 @@ export function Sidebar() {
       </nav>
 
       <div className="border-t border-[var(--border-subtle)] p-3">
-        {isAuthenticated ? (
+        {isLoading ? (
+          <div className="h-12" />
+        ) : isAuthenticated ? (
           <UserMenu />
         ) : (
           <SignInButton className="w-full" />

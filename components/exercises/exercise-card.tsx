@@ -28,7 +28,7 @@ const BUCKET_LABEL: Record<Bucket, string> = {
 
 function Sparkline({ values }: { values: number[] }) {
   if (values.length < 2) {
-    return <div className="h-7 w-20" aria-hidden />;
+    return <div className="h-7 w-20 shrink-0" aria-hidden />;
   }
   const max = Math.max(...values);
   const min = Math.min(...values);
@@ -44,7 +44,7 @@ function Sparkline({ values }: { values: number[] }) {
       width={w}
       height={h}
       viewBox={`0 0 ${w} ${h}`}
-      className="overflow-visible"
+      className="shrink-0 overflow-visible"
       aria-hidden
     >
       <polyline

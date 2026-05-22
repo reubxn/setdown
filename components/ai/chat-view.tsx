@@ -1,4 +1,4 @@
-// <ChatPanel open={open} onClose={…} pathname="/overview" />
+// <ChatView pathname="/coach" /> — full-page chat experience for /coach
 "use client";
 
 import {
@@ -8,10 +8,9 @@ import {
   useRef,
   useState,
 } from "react";
-import { Plus, Send, Trash2 } from "lucide-react";
+import { ChevronDown, Plus, Send, Trash2 } from "lucide-react";
 import { useMutation, useQuery } from "convex/react";
 import { useAuthToken } from "@convex-dev/auth/react";
-import { SlideOver } from "@/components/ui/slide-over";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { useDataset } from "@/context/dataset-context";
@@ -27,22 +26,17 @@ import { SuggestedPrompts } from "./suggested-prompts";
 import { ChatHistorySkeleton } from "@/components/loading/page-skeletons";
 import { cn } from "@/components/ui/utils";
 
-interface ChatPanelProps {
-  open: boolean;
-  onClose: () => void;
+interface ChatViewProps {
   pathname?: string;
 }
 
-type PanelMessage = ChatMessageType & { displays?: ChatDisplay[] };
+type ViewMessage = ChatMessageType & { displays?: ChatDisplay[] };
 
-export function ChatPanel({ open, onClose, pathname }: ChatPanelProps) {
+export function ChatView({ pathname }: ChatViewProps) {
   const { dataset } = useDataset();
   const token = useAuthToken();
 
-  const threads = useQuery(
-    api.ai.insight_storage.listThreads,
-    open ? {} : "skip",
-  );
+  const threads = useQuery(api.ai.insight_storage.listThreads, {});
   const [activeThreadId, setActiveThreadId] =
     useState<Id<"chatThreads"> | null>(null);
   const [showThreadList, setShowThreadList] = useState(false);
@@ -52,29 +46,26 @@ export function ChatPanel({ open, onClose, pathname }: ChatPanelProps) {
 
   const history = useQuery(
     api.ai.insight_storage.listChatMessages,
-    open && activeThreadId
-      ? { limit: 50, threadId: activeThreadId }
-      : "skip",
+    activeThreadId ? { limit: 50, threadId: activeThreadId } : "skip",
   );
-  const usage = useQuery(
-    api.ai.insight_storage.chatUsageToday,
-    open ? {} : "skip",
-  );
+  const usage = useQuery(api.ai.insight_storage.chatUsageToday, {});
 
-  const [transient, setTransient] = useState<PanelMessage[]>([]);
+  const [transient, setTransient] = useState<ViewMessage[]>([]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // When the panel opens, pick the most recent thread (or stay blank for new chat).
+  // Auto-pick most recent thread on first load (don't override new-chat state).
+  const initialisedRef = useRef(false);
   useEffect(() => {
-    if (!open) return;
-    if (activeThreadId) return;
-    if (threads && threads.length > 0) {
+    if (initialisedRef.current) return;
+    if (!threads) return;
+    if (threads.length > 0) {
       setActiveThreadId(threads[0]._id);
     }
-  }, [open, threads, activeThreadId]);
+    initialisedRef.current = true;
+  }, [threads]);
 
   // Clear transient when switching threads.
   useEffect(() => {
@@ -100,9 +91,9 @@ export function ChatPanel({ open, onClose, pathname }: ChatPanelProps) {
     });
   }, [history, transient, streaming]);
 
-  const messages: PanelMessage[] = [
+  const messages: ViewMessage[] = [
     ...(history ?? []).map(
-      (h): PanelMessage => ({
+      (h): ViewMessage => ({
         role: h.role,
         content: h.content,
         displays:
@@ -112,17 +103,18 @@ export function ChatPanel({ open, onClose, pathname }: ChatPanelProps) {
     ...transient,
   ];
 
-  const ensureThread = useCallback(async (): Promise<Id<"chatThreads"> | null> => {
-    if (activeThreadId) return activeThreadId;
-    try {
-      const id = await createThread({});
-      setActiveThreadId(id);
-      return id;
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to start thread.");
-      return null;
-    }
-  }, [activeThreadId, createThread]);
+  const ensureThread =
+    useCallback(async (): Promise<Id<"chatThreads"> | null> => {
+      if (activeThreadId) return activeThreadId;
+      try {
+        const id = await createThread({});
+        setActiveThreadId(id);
+        return id;
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Failed to start thread.");
+        return null;
+      }
+    }, [activeThreadId, createThread]);
 
   const send = useCallback(
     async (text: string) => {
@@ -141,8 +133,8 @@ export function ChatPanel({ open, onClose, pathname }: ChatPanelProps) {
       const threadId = await ensureThread();
       if (!threadId) return;
 
-      const userMsg: PanelMessage = { role: "user", content: text.trim() };
-      const assistantPlaceholder: PanelMessage = {
+      const userMsg: ViewMessage = { role: "user", content: text.trim() };
+      const assistantPlaceholder: ViewMessage = {
         role: "assistant",
         content: "",
         displays: [],
@@ -195,8 +187,6 @@ export function ChatPanel({ open, onClose, pathname }: ChatPanelProps) {
           try {
             evt = JSON.parse(line);
           } catch {
-            // Backwards compatibility: if the server ever sends plain text,
-            // append it verbatim.
             assistantText += line;
             updateLast();
             return;
@@ -248,7 +238,7 @@ export function ChatPanel({ open, onClose, pathname }: ChatPanelProps) {
     send(input);
   };
 
-  const onNewChat = async () => {
+  const onNewChat = () => {
     if (streaming) return;
     setError(null);
     setTransient([]);
@@ -277,44 +267,137 @@ export function ChatPanel({ open, onClose, pathname }: ChatPanelProps) {
   };
 
   const remaining = usage ? Math.max(0, usage.limit - usage.used) : null;
-
   const activeThread = threads?.find((t) => t._id === activeThreadId);
-  const title = activeThread?.title ?? "New chat";
+  const activeTitle = activeThread?.title ?? "New chat";
 
   return (
-    <SlideOver
-      open={open}
-      onClose={onClose}
-      title={
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setShowThreadList((v) => !v)}
-            className="max-w-[220px] truncate text-left text-base font-semibold text-[var(--text-primary)] hover:text-[var(--accent)]"
-            aria-label="Switch chat thread"
-          >
-            {title}
-          </button>
+    <div className="flex h-full flex-col">
+      {/* Thread switcher row */}
+      <div className="border-b border-[var(--border-subtle)] bg-[var(--bg-base)]/60 px-4 py-2 backdrop-blur-sm">
+        <div className="mx-auto flex max-w-3xl items-center gap-2">
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setShowThreadList((v) => !v)}
+              className="inline-flex max-w-[260px] items-center gap-1.5 rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-2.5 py-1.5 text-sm font-medium text-[var(--text-primary)] hover:border-[var(--accent)]"
+              aria-label="Switch chat thread"
+              aria-expanded={showThreadList}
+            >
+              <span className="truncate">{activeTitle}</span>
+              <ChevronDown className="h-3.5 w-3.5 shrink-0 text-[var(--text-muted)]" />
+            </button>
+            {showThreadList ? (
+              <div className="absolute left-0 top-full z-20 mt-1 w-72 rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-2 shadow-lg">
+                <div className="flex items-center justify-between px-1 pb-2 text-[11px] font-medium uppercase tracking-wide text-[var(--text-muted)]">
+                  <span>Chats</span>
+                  <button
+                    type="button"
+                    onClick={onNewChat}
+                    className="text-[var(--accent)] hover:opacity-80"
+                  >
+                    + New chat
+                  </button>
+                </div>
+                {threads && threads.length > 0 ? (
+                  <ul className="max-h-72 space-y-0.5 overflow-y-auto">
+                    {threads.map((t) => (
+                      <li
+                        key={t._id}
+                        className={cn(
+                          "group flex items-center gap-1 rounded px-2 py-1.5 text-sm",
+                          t._id === activeThreadId
+                            ? "bg-[var(--bg-base)] text-[var(--text-primary)]"
+                            : "text-[var(--text-secondary)] hover:bg-[var(--bg-base)]",
+                        )}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => onPickThread(t._id)}
+                          className="flex-1 truncate text-left"
+                        >
+                          {t.title}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onDeleteThread(t._id)}
+                          className="text-[var(--text-muted)] opacity-0 transition-opacity hover:text-[var(--danger)] group-hover:opacity-100"
+                          aria-label={`Delete ${t.title}`}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="px-2 py-1 text-xs text-[var(--text-muted)]">
+                    No previous chats.
+                  </p>
+                )}
+              </div>
+            ) : null}
+          </div>
           <button
             type="button"
             onClick={onNewChat}
             disabled={streaming}
-            className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-[var(--border-subtle)] text-[var(--text-secondary)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-md border border-[var(--border-subtle)] px-2.5 py-1.5 text-xs font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:opacity-50"
             aria-label="New chat"
-            title="New chat"
           >
             <Plus className="h-3.5 w-3.5" />
+            New chat
           </button>
+          <div className="ml-auto text-xs text-[var(--text-muted)]">
+            {remaining !== null
+              ? `${remaining} of ${usage?.limit} left today`
+              : null}
+          </div>
         </div>
-      }
-      description={
-        remaining !== null
-          ? `${remaining} of ${usage?.limit} messages left today`
-          : "Ask about your training"
-      }
-      width="lg"
-      footer={
-        <form onSubmit={onSubmit} className="flex items-center gap-2">
+      </div>
+
+      {/* Messages */}
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-6">
+        <div className="mx-auto flex max-w-3xl flex-col gap-3">
+          {activeThreadId && history === undefined ? (
+            <ChatHistorySkeleton />
+          ) : messages.length === 0 && !streaming ? (
+            <div className="space-y-3">
+              <p className="text-sm text-[var(--text-secondary)]">
+                Ask anything about your training. The coach can pull up
+                sessions, PRs, body data, and muscle-group breakdowns on the
+                fly.
+              </p>
+              <SuggestedPrompts
+                path={pathname}
+                onPick={(p) => send(p)}
+                disabled={streaming || !dataset}
+              />
+            </div>
+          ) : null}
+          {messages.map((m, i) => (
+            <ChatMessage
+              key={i}
+              role={m.role}
+              content={m.content}
+              displays={m.displays}
+              pending={
+                streaming &&
+                i === messages.length - 1 &&
+                m.role === "assistant"
+              }
+            />
+          ))}
+          {error ? (
+            <p className="text-sm text-[var(--danger)]">{error}</p>
+          ) : null}
+        </div>
+      </div>
+
+      {/* Composer */}
+      <div className="border-t border-[var(--border-subtle)] bg-[var(--bg-base)]/80 px-4 py-3 backdrop-blur-sm">
+        <form
+          onSubmit={onSubmit}
+          className="mx-auto flex max-w-3xl items-center gap-2"
+        >
           <input
             type="text"
             value={input}
@@ -325,7 +408,7 @@ export function ChatPanel({ open, onClose, pathname }: ChatPanelProps) {
                 ? "Ask about your training…"
                 : "Upload a CSV first to enable chat"
             }
-            className="flex-1 rounded-md border border-[var(--border-subtle)] bg-[var(--bg-base)] px-3 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none focus:border-[var(--accent)] disabled:opacity-50"
+            className="flex-1 rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-3 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none focus:border-[var(--accent)] disabled:opacity-50"
           />
           <button
             type="submit"
@@ -336,90 +419,7 @@ export function ChatPanel({ open, onClose, pathname }: ChatPanelProps) {
             <Send className="h-4 w-4" />
           </button>
         </form>
-      }
-    >
-      {showThreadList ? (
-        <div className="mb-3 rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-2">
-          <div className="flex items-center justify-between px-1 pb-2 text-[11px] font-medium uppercase tracking-wide text-[var(--text-muted)]">
-            <span>Chats</span>
-            <button
-              type="button"
-              onClick={onNewChat}
-              className="text-[var(--accent)] hover:opacity-80"
-            >
-              + New chat
-            </button>
-          </div>
-          {threads && threads.length > 0 ? (
-            <ul className="max-h-56 space-y-0.5 overflow-y-auto">
-              {threads.map((t) => (
-                <li
-                  key={t._id}
-                  className={cn(
-                    "group flex items-center gap-1 rounded px-2 py-1.5 text-sm",
-                    t._id === activeThreadId
-                      ? "bg-[var(--bg-base)] text-[var(--text-primary)]"
-                      : "text-[var(--text-secondary)] hover:bg-[var(--bg-base)]",
-                  )}
-                >
-                  <button
-                    type="button"
-                    onClick={() => onPickThread(t._id)}
-                    className="flex-1 truncate text-left"
-                  >
-                    {t.title}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => onDeleteThread(t._id)}
-                    className="text-[var(--text-muted)] opacity-0 transition-opacity hover:text-[var(--danger)] group-hover:opacity-100"
-                    aria-label={`Delete ${t.title}`}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="px-2 py-1 text-xs text-[var(--text-muted)]">
-              No previous chats.
-            </p>
-          )}
-        </div>
-      ) : null}
-
-      <div
-        ref={scrollRef}
-        className="flex h-full flex-col gap-3 overflow-y-auto"
-      >
-        {open && activeThreadId && history === undefined ? (
-          <ChatHistorySkeleton />
-        ) : messages.length === 0 && !streaming ? (
-          <div className="space-y-3">
-            <p className="text-sm text-[var(--text-secondary)]">
-              Ask anything about your training. The coach can pull up sessions,
-              PRs, body data, and muscle-group breakdowns on the fly.
-            </p>
-            <SuggestedPrompts
-              path={pathname}
-              onPick={(p) => send(p)}
-              disabled={streaming || !dataset}
-            />
-          </div>
-        ) : null}
-        {messages.map((m, i) => (
-          <ChatMessage
-            key={i}
-            role={m.role}
-            content={m.content}
-            displays={m.displays}
-            pending={
-              streaming && i === messages.length - 1 && m.role === "assistant"
-            }
-          />
-        ))}
-        {error ? <p className="text-sm text-[var(--danger)]">{error}</p> : null}
       </div>
-    </SlideOver>
+    </div>
   );
 }

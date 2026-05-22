@@ -21,9 +21,10 @@ export function UserMenu({ className }: { className?: string }) {
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
-  if (!isAuthenticated || !user) return null;
+  if (!isAuthenticated) return null;
 
-  const initial = (user.name ?? user.email ?? "?").slice(0, 1).toUpperCase();
+  const initial = (user?.name ?? user?.email ?? "?").slice(0, 1).toUpperCase();
+  const displayName = user?.name ?? user?.email ?? "Account";
 
   return (
     <div ref={ref} className={cn("relative", className)}>
@@ -34,7 +35,7 @@ export function UserMenu({ className }: { className?: string }) {
         aria-haspopup="menu"
         aria-expanded={open}
       >
-        {user.image ? (
+        {user?.image ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={user.image}
@@ -49,7 +50,7 @@ export function UserMenu({ className }: { className?: string }) {
         )}
         <div className="min-w-0 flex-1">
           <div className="truncate text-sm text-[var(--text-primary)]">
-            {user.name ?? user.email ?? "Account"}
+            {displayName}
           </div>
         </div>
         <svg

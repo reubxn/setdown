@@ -69,7 +69,7 @@ export function Dropzone({
   );
 
   const defaultTitle =
-    size === "sm" ? "Replace CSV" : "Drop your Strong export";
+    size === "sm" ? "Update from new export" : "Drop your Strong export";
   const defaultSubtitle =
     size === "sm"
       ? "click to choose a file"

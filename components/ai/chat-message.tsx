@@ -55,7 +55,7 @@ const markdownComponents: Components = {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="text-[var(--accent)] underline underline-offset-2 hover:opacity-80"
+      className="break-all text-[var(--accent)] underline underline-offset-2 hover:opacity-80"
     >
       {children}
     </a>
@@ -107,7 +107,7 @@ export function ChatMessage({
 }: ChatMessageProps) {
   if (role === "user") {
     return (
-      <div className="ml-auto max-w-[85%] whitespace-pre-wrap rounded-2xl bg-[var(--bg-elevated)] px-4 py-2.5 text-sm text-[var(--text-primary)]">
+      <div className="ml-auto max-w-[90%] break-words whitespace-pre-wrap rounded-2xl bg-[var(--bg-elevated)] px-4 py-2.5 text-sm text-[var(--text-primary)] sm:max-w-[85%]">
         {content}
       </div>
     );
@@ -116,7 +116,7 @@ export function ChatMessage({
   return (
     <div
       className={cn(
-        "max-w-[90%] rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-base)] px-4 py-3 text-sm leading-relaxed text-[var(--text-primary)]",
+        "max-w-full break-words rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-base)] px-4 py-3 text-sm leading-relaxed text-[var(--text-primary)] sm:max-w-[90%]",
       )}
     >
       {content ? (

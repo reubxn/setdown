@@ -61,7 +61,7 @@ export function DataSection({ isAuthenticated }: { isAuthenticated: boolean }) {
         <div className="flex flex-wrap gap-2">
           <Link href="/upload?replace=1">
             <Button variant="secondary" size="sm">
-              Replace dataset
+              Update from new export
             </Button>
           </Link>
           {isAuthenticated ? (
@@ -80,8 +80,9 @@ export function DataSection({ isAuthenticated }: { isAuthenticated: boolean }) {
         </div>
 
         <p className="mt-4 text-xs text-[var(--text-muted)]">
-          Replacing a dataset keeps your AI chat history and body measurements.
-          Wiping clears workouts, insights, chats, and measurements.
+          Updating from a new export keeps your AI chat history and body
+          measurements. Wiping clears workouts, insights, chats, and
+          measurements.
         </p>
       </CardBody>
 
