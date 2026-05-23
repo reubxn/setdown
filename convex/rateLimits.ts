@@ -10,12 +10,6 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
     capacity: 3,
   },
   wipeData: { kind: "fixed window", rate: 5, period: HOUR * 24, capacity: 5 },
-  generateInsights: {
-    kind: "token bucket",
-    rate: 20,
-    period: HOUR,
-    capacity: 20,
-  },
   // Gates an Anthropic API request via /api/chat. Consumed by reserveChatTurn
   // before each LLM call so a stolen token can't burn credits faster than this.
   chatRequest: { kind: "token bucket", rate: 30, period: HOUR, capacity: 60 },

@@ -45,22 +45,6 @@ export default defineSchema({
     .index("by_user_exercise_date", ["userId", "exerciseSlug", "date"])
     .index("by_user_date", ["userId", "date"]),
 
-  insights: defineTable({
-    userId: v.id("users"),
-    datasetVersion: v.number(),
-    kind: v.union(
-      v.literal("overview"),
-      v.literal("exercise"),
-      v.literal("plateau"),
-      v.literal("balance"),
-      v.literal("streak"),
-    ),
-    scope: v.optional(v.string()),
-    content: v.string(),
-    generatedAt: v.number(),
-    model: v.string(),
-  }).index("by_user_version_kind", ["userId", "datasetVersion", "kind"]),
-
   chatThreads: defineTable({
     userId: v.id("users"),
     title: v.string(),

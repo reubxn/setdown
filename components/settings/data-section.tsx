@@ -81,8 +81,7 @@ export function DataSection({ isAuthenticated }: { isAuthenticated: boolean }) {
 
         <p className="mt-4 text-xs text-[var(--text-muted)]">
           Updating from a new export keeps your AI chat history and body
-          measurements. Wiping clears workouts, insights, chats, and
-          measurements.
+          measurements. Wiping clears workouts, chats, and measurements.
         </p>
       </CardBody>
 
@@ -90,7 +89,7 @@ export function DataSection({ isAuthenticated }: { isAuthenticated: boolean }) {
         open={confirmOpen}
         onClose={() => !busy && setConfirmOpen(false)}
         title="Wipe server data"
-        description="Permanently removes all of your workouts, insights, chats, and body measurements. Your account stays."
+        description="Permanently removes all of your workouts, chats, and body measurements. Your account stays."
         footer={
           <>
             <Button

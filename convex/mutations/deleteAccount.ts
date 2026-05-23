@@ -25,12 +25,6 @@ export default mutation({
       .collect();
     for (const d of datasets) await ctx.db.delete(d._id);
 
-    const insights = await ctx.db
-      .query("insights")
-      .withIndex("by_user_version_kind", (q) => q.eq("userId", userId))
-      .collect();
-    for (const i of insights) await ctx.db.delete(i._id);
-
     const chats = await ctx.db
       .query("chatMessages")
       .withIndex("by_user_created", (q) => q.eq("userId", userId))
