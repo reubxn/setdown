@@ -8,11 +8,7 @@ const MAX_FILENAME = 256;
 const MAX_EXERCISE_NAME = 200;
 const MAX_EXERCISE_SLUG = 200;
 const MAX_NOTES = 2000;
-const MAX_REPS = 10_000;
-const MAX_SET_ORDER = 1000;
-const MAX_DURATION_SEC = 86_400;
 const MAX_WORKOUT_NAME = 200;
-const MAX_SESSION_DURATION_MIN = 24 * 60; // 1 day
 
 export default mutation({
   args: {
@@ -78,14 +74,10 @@ export default mutation({
       if (!Number.isFinite(s.weightKg) || s.weightKg < 0) {
         throw new Error("weightKg out of range");
       }
-      if (!Number.isFinite(s.reps) || s.reps < 0 || s.reps > MAX_REPS) {
+      if (!Number.isFinite(s.reps) || s.reps < 0) {
         throw new Error("reps out of range");
       }
-      if (
-        !Number.isFinite(s.setOrder) ||
-        s.setOrder < 0 ||
-        s.setOrder > MAX_SET_ORDER
-      ) {
+      if (!Number.isFinite(s.setOrder) || s.setOrder < 0) {
         throw new Error("setOrder out of range");
       }
       if (
@@ -96,9 +88,7 @@ export default mutation({
       }
       if (
         s.durationSec !== undefined &&
-        (!Number.isFinite(s.durationSec) ||
-          s.durationSec < 0 ||
-          s.durationSec > MAX_DURATION_SEC)
+        (!Number.isFinite(s.durationSec) || s.durationSec < 0)
       ) {
         throw new Error("durationSec out of range");
       }
@@ -111,8 +101,7 @@ export default mutation({
       if (
         s.sessionDurationMinutes !== undefined &&
         (!Number.isFinite(s.sessionDurationMinutes) ||
-          s.sessionDurationMinutes < 0 ||
-          s.sessionDurationMinutes > MAX_SESSION_DURATION_MIN)
+          s.sessionDurationMinutes < 0)
       ) {
         throw new Error("sessionDurationMinutes out of range");
       }
