@@ -47,12 +47,21 @@ function AuthBridge({ children }: { children: ReactNode }) {
             k.startsWith("__convexAuthJWT_"),
           )
         : null;
+    const clientAddress = (convex as unknown as { address?: string }).address;
+    const expectedNamespace = (clientAddress ?? "").replace(
+      /[^a-zA-Z0-9]/g,
+      "",
+    );
+    const expectedKey = `__convexAuthJWT_${expectedNamespace}`;
     console.log("[auth-debug]", {
       isLoading,
       isAuthenticated,
       hasUser: !!user,
-      jwtKey: jwt,
-      jwtPresent: !!(jwt && window.localStorage.getItem(jwt)),
+      jwtKeyInStorage: jwt,
+      expectedKey,
+      matches: jwt === expectedKey,
+      clientAddress,
+      envUrl: process.env.NEXT_PUBLIC_CONVEX_URL,
     });
   }, [isLoading, isAuthenticated, user]);
 
