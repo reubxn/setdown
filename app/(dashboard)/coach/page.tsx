@@ -10,6 +10,7 @@ import { ChatView } from "@/components/ai/chat-view";
 import { LoginModal } from "@/components/auth/login-modal";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { PageShell } from "@/components/layout/page-shell";
 
 export default function CoachPage() {
   const pathname = usePathname();
@@ -19,30 +20,15 @@ export default function CoachPage() {
 
   if (isLoading || loading) {
     return (
-      <div className="mx-auto w-full max-w-3xl px-4 py-6">
-        <header className="mb-6 flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold text-[var(--text-primary)]">
-            Coach
-          </h1>
-          <p className="text-sm text-[var(--text-muted)]">
-            Ask anything about your training.
-          </p>
-        </header>
-      </div>
+      <PageShell title="Coach" subtitle="Ask anything about your training.">
+        <></>
+      </PageShell>
     );
   }
 
   if (!isAuthenticated) {
     return (
-      <div className="mx-auto w-full max-w-3xl px-4 py-6">
-        <header className="mb-6 flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold text-[var(--text-primary)]">
-            Coach
-          </h1>
-          <p className="text-sm text-[var(--text-muted)]">
-            Ask anything about your training.
-          </p>
-        </header>
+      <PageShell title="Coach" subtitle="Ask anything about your training.">
         <EmptyState
           icon={Lock}
           title="Sign in to chat with AI"
@@ -59,21 +45,13 @@ export default function CoachPage() {
           title="Sign in to chat with AI"
           subtitle="AI coaching is free with an account."
         />
-      </div>
+      </PageShell>
     );
   }
 
   if (!dataset) {
     return (
-      <div className="mx-auto w-full max-w-3xl px-4 py-6">
-        <header className="mb-6 flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold text-[var(--text-primary)]">
-            Coach
-          </h1>
-          <p className="text-sm text-[var(--text-muted)]">
-            Ask anything about your training.
-          </p>
-        </header>
+      <PageShell title="Coach" subtitle="Ask anything about your training.">
         <EmptyState
           icon={Sparkles}
           title="No data to chat about yet"
@@ -84,21 +62,22 @@ export default function CoachPage() {
             </Link>
           }
         />
-      </div>
+      </PageShell>
     );
   }
 
-  // Full-height layout: account for the app-shell's vertical padding
-  // (pt-4 pb-24 on mobile, pt-6 pb-8 on lg) so the chat fills what's left.
+  // Full-height chat: account for the app-shell's vertical padding
+  // (pt-4 pb-24 on mobile, pt-6 pb-8 on lg) plus the page-shell's own
+  // py-6/lg:py-8 so the chat fills what's left under the heading.
   return (
-    <div className="mx-auto flex h-[calc(100dvh-10rem)] w-full max-w-5xl flex-col px-2 lg:h-[calc(100dvh-3.5rem)] lg:px-4">
-      <header className="px-2 pb-3 lg:px-4">
-        <h1 className="text-2xl font-semibold text-[var(--text-primary)]">
-          Coach
-        </h1>
-        <p className="text-sm text-[var(--text-muted)]">
-          Ask anything about your training.
-        </p>
+    <div className="mx-auto flex h-[calc(100dvh-10rem)] w-full max-w-[1600px] flex-col px-4 py-6 sm:px-6 lg:h-[calc(100dvh-3.5rem)] lg:px-10 lg:py-8">
+      <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="font-display text-3xl lg:text-4xl">Coach</h1>
+          <p className="mt-1 text-sm text-[var(--text-muted)] lg:text-base">
+            Ask anything about your training.
+          </p>
+        </div>
       </header>
       <div className="flex-1 overflow-hidden rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)]/40">
         <ChatView pathname={pathname ?? undefined} />
