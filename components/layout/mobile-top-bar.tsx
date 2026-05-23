@@ -4,10 +4,12 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/auth-context";
 import { SignInButton } from "@/components/auth/sign-in-button";
+import { SettingsSheet } from "@/components/settings/settings-sheet";
 
 export function MobileTopBar() {
   const { user, isAuthenticated, isLoading, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -63,14 +65,17 @@ export function MobileTopBar() {
               role="menu"
               className="absolute right-0 top-full mt-2 w-48 overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-base)] shadow-[var(--shadow-elevated)]"
             >
-              <Link
-                href="/settings"
+              <button
+                type="button"
                 role="menuitem"
-                onClick={() => setMenuOpen(false)}
-                className="block px-4 py-2.5 text-sm text-[var(--text-primary)] hover:bg-white/5"
+                onClick={() => {
+                  setMenuOpen(false);
+                  setSettingsOpen(true);
+                }}
+                className="block w-full px-4 py-2.5 text-left text-sm text-[var(--text-primary)] hover:bg-white/5"
               >
                 Settings
-              </Link>
+              </button>
               <button
                 type="button"
                 role="menuitem"
@@ -88,6 +93,8 @@ export function MobileTopBar() {
       ) : (
         <SignInButton className="px-3 py-1.5 text-xs" />
       )}
+
+      <SettingsSheet open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </header>
   );
 }

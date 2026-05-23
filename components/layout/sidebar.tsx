@@ -7,7 +7,6 @@ import {
   Dumbbell,
   History,
   LayoutDashboard,
-  Settings,
   Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -28,7 +27,6 @@ const baseNav: NavItem[] = [
   { href: "/history", label: "History", icon: History },
   { href: "/insights", label: "Insights", icon: BarChart3, authOnly: true },
   { href: "/coach", label: "Coach", icon: Sparkles },
-  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 export function Sidebar() {

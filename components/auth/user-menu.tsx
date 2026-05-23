@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { useAuth } from "@/context/auth-context";
 import { cn } from "@/lib/utils";
+import { SettingsSheet } from "@/components/settings/settings-sheet";
 
 export function UserMenu({ className }: { className?: string }) {
   const { user, isAuthenticated, signOut } = useAuth();
   const [open, setOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -72,14 +73,17 @@ export function UserMenu({ className }: { className?: string }) {
           role="menu"
           className="absolute bottom-full left-0 mb-2 w-full min-w-[200px] overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-base)] shadow-[var(--shadow-elevated)]"
         >
-          <Link
-            href="/settings"
+          <button
+            type="button"
             role="menuitem"
-            onClick={() => setOpen(false)}
-            className="block px-4 py-2.5 text-sm text-[var(--text-primary)] hover:bg-white/5"
+            onClick={() => {
+              setOpen(false);
+              setSettingsOpen(true);
+            }}
+            className="block w-full px-4 py-2.5 text-left text-sm text-[var(--text-primary)] hover:bg-white/5"
           >
             Settings
-          </Link>
+          </button>
           <button
             type="button"
             role="menuitem"
@@ -93,6 +97,8 @@ export function UserMenu({ className }: { className?: string }) {
           </button>
         </div>
       )}
+
+      <SettingsSheet open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   );
 }
