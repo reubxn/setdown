@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Bebas_Neue } from "next/font/google";
+import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
 import { DatasetProvider } from "@/context/dataset-context";
 import { AuthProvider } from "@/context/auth-context";
 import { PreferencesProvider } from "@/context/preferences-context";
@@ -27,14 +28,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className={`${geist.variable} ${bebas.variable} antialiased`}>
-        <AuthProvider>
-          <PreferencesProvider>
-            <DatasetProvider>{children}</DatasetProvider>
-          </PreferencesProvider>
-        </AuthProvider>
-      </body>
-    </html>
+    <ConvexAuthNextjsServerProvider>
+      <html lang="en" className="dark">
+        <body className={`${geist.variable} ${bebas.variable} antialiased`}>
+          <AuthProvider>
+            <PreferencesProvider>
+              <DatasetProvider>{children}</DatasetProvider>
+            </PreferencesProvider>
+          </AuthProvider>
+        </body>
+      </html>
+    </ConvexAuthNextjsServerProvider>
   );
 }

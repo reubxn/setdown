@@ -8,7 +8,8 @@ import {
   useRef,
   type ReactNode,
 } from "react";
-import { ConvexAuthProvider, useAuthActions } from "@convex-dev/auth/react";
+import { useAuthActions } from "@convex-dev/auth/react";
+import { ConvexAuthNextjsProvider } from "@convex-dev/auth/nextjs";
 import { useConvexAuth, useQuery } from "convex/react";
 import { convex } from "@/lib/convex-client";
 import { api } from "@/convex/_generated/api";
@@ -39,31 +40,6 @@ function AuthBridge({ children }: { children: ReactNode }) {
     api.queries.getCurrentUser.default,
     isAuthenticated ? {} : "skip",
   );
-
-  useEffect(() => {
-    const jwt =
-      typeof window !== "undefined"
-        ? Object.keys(window.localStorage).find((k) =>
-            k.startsWith("__convexAuthJWT_"),
-          )
-        : null;
-    const clientAddress = (convex as unknown as { address?: string }).address;
-    const expectedNamespace = (clientAddress ?? "").replace(
-      /[^a-zA-Z0-9]/g,
-      "",
-    );
-    const expectedKey = `__convexAuthJWT_${expectedNamespace}`;
-    console.log("[auth-debug]", {
-      isLoading,
-      isAuthenticated,
-      hasUser: !!user,
-      jwtKeyInStorage: jwt,
-      expectedKey,
-      matches: jwt === expectedKey,
-      clientAddress,
-      envUrl: process.env.NEXT_PUBLIC_CONVEX_URL,
-    });
-  }, [isLoading, isAuthenticated, user]);
 
   const migratedRef = useRef(false);
   useEffect(() => {
@@ -97,9 +73,9 @@ function AuthBridge({ children }: { children: ReactNode }) {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   return (
-    <ConvexAuthProvider client={convex}>
+    <ConvexAuthNextjsProvider client={convex}>
       <AuthBridge>{children}</AuthBridge>
-    </ConvexAuthProvider>
+    </ConvexAuthNextjsProvider>
   );
 }
 
