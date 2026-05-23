@@ -33,6 +33,7 @@ yarn-error.log*
 # personal data
 strong_workouts*.csv
 *.csv
+!strong_export_sample.csv
 
 # vercel
 .vercel
