@@ -40,6 +40,22 @@ function AuthBridge({ children }: { children: ReactNode }) {
     isAuthenticated ? {} : "skip",
   );
 
+  useEffect(() => {
+    const jwt =
+      typeof window !== "undefined"
+        ? Object.keys(window.localStorage).find((k) =>
+            k.startsWith("__convexAuthJWT_"),
+          )
+        : null;
+    console.log("[auth-debug]", {
+      isLoading,
+      isAuthenticated,
+      hasUser: !!user,
+      jwtKey: jwt,
+      jwtPresent: !!(jwt && window.localStorage.getItem(jwt)),
+    });
+  }, [isLoading, isAuthenticated, user]);
+
   const migratedRef = useRef(false);
   useEffect(() => {
     if (!isAuthenticated || migratedRef.current) return;
