@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  BarChart3,
   Dumbbell,
   History,
   LayoutDashboard,
@@ -19,14 +18,12 @@ interface NavItem {
   href: string;
   label: string;
   icon: typeof LayoutDashboard;
-  authOnly?: boolean;
 }
 
 const baseNav: NavItem[] = [
   { href: "/overview", label: "Overview", icon: LayoutDashboard },
   { href: "/exercises", label: "Exercises", icon: Dumbbell },
   { href: "/history", label: "History", icon: History },
-  { href: "/insights", label: "Insights", icon: BarChart3, authOnly: true },
   { href: "/coach", label: "Coach", icon: Sparkles },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
@@ -35,7 +32,7 @@ export function Sidebar() {
   const pathname = usePathname();
   const { isAuthenticated, isLoading } = useAuth();
 
-  const items = baseNav.filter((item) => !item.authOnly || isAuthenticated);
+  const items = baseNav;
 
   return (
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col border-r border-[var(--border-subtle)] bg-[var(--bg-elevated)] lg:flex">

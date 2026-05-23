@@ -186,27 +186,6 @@ export function SessionDetailSkeleton() {
   );
 }
 
-export function InsightsSkeleton() {
-  return (
-    <div className="@container mx-auto w-full max-w-6xl px-4 py-6">
-      <div className="mb-6 space-y-2">
-        <Skeleton className="h-7 w-32" />
-        <Skeleton className="h-4 w-72" />
-      </div>
-      <div className="grid gap-4 @lg:grid-cols-2">
-        <ChartCardSkeleton />
-        <ChartCardSkeleton />
-        <ChartCardSkeleton height="h-40" />
-        <Card padding="md" className="@lg:col-span-2">
-          <Skeleton className="mb-3 h-4 w-40" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="mt-2 h-4 w-3/4" />
-        </Card>
-      </div>
-    </div>
-  );
-}
-
 export function ChatHistorySkeleton() {
   return (
     <div className="space-y-3" aria-label="Loading chat history">

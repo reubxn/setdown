@@ -36,19 +36,19 @@ export function ChatView({ pathname }: ChatViewProps) {
   const { dataset } = useDataset();
   const token = useAuthToken();
 
-  const threads = useQuery(api.ai.insight_storage.listThreads, {});
+  const threads = useQuery(api.ai.chat_storage.listThreads, {});
   const [activeThreadId, setActiveThreadId] =
     useState<Id<"chatThreads"> | null>(null);
   const [showThreadList, setShowThreadList] = useState(false);
 
-  const createThread = useMutation(api.ai.insight_storage.createThread);
-  const deleteThread = useMutation(api.ai.insight_storage.deleteThread);
+  const createThread = useMutation(api.ai.chat_storage.createThread);
+  const deleteThread = useMutation(api.ai.chat_storage.deleteThread);
 
   const history = useQuery(
-    api.ai.insight_storage.listChatMessages,
+    api.ai.chat_storage.listChatMessages,
     activeThreadId ? { limit: 50, threadId: activeThreadId } : "skip",
   );
-  const usage = useQuery(api.ai.insight_storage.chatUsageToday, {});
+  const usage = useQuery(api.ai.chat_storage.chatUsageToday, {});
 
   const [transient, setTransient] = useState<ViewMessage[]>([]);
   const [input, setInput] = useState("");

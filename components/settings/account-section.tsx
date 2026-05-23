@@ -83,7 +83,7 @@ export function AccountSection({ user }: { user: AuthUser }) {
         open={confirmOpen}
         onClose={() => !busy && setConfirmOpen(false)}
         title="Delete account"
-        description="This permanently removes your workouts, insights, chat history, and body measurements. This cannot be undone."
+        description="This permanently removes your workouts, chat history, and body measurements. This cannot be undone."
         footer={
           <>
             <Button

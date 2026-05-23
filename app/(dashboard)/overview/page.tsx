@@ -15,6 +15,7 @@ import { KpiRow, type KpiItem } from "@/components/dashboard/kpi-row";
 import { VolumeCard } from "@/components/dashboard/volume-card";
 import { FrequencyCalendar } from "@/components/dashboard/frequency-calendar";
 import { BodyHeatmap } from "@/components/analytics/body-heatmap";
+import { MuscleBalance } from "@/components/analytics/muscle-balance";
 import { RecentPRs } from "@/components/dashboard/recent-prs";
 import { TopExercises } from "@/components/dashboard/top-exercises";
 import { PeriodCompareCard } from "@/components/dashboard/period-compare";
@@ -191,7 +192,10 @@ export default function OverviewPage() {
           <TopExercises dataset={dataset} />
         </div>
 
-        <PeriodCompareCard dataset={dataset} />
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-6">
+          <MuscleBalance dataset={dataset} />
+          <PeriodCompareCard dataset={dataset} />
+        </div>
       </div>
     </PageShell>
   );

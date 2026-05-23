@@ -2,7 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
-import { CHAT_SYSTEM_PROMPT } from "@/lib/ai/insight-prompts";
+import { CHAT_SYSTEM_PROMPT } from "@/lib/ai/chat-prompts";
 import {
   TOOL_DEFINITIONS,
   rehydrateDataset,
@@ -114,7 +114,7 @@ export async function POST(request: Request) {
   // caller is under the daily cap. Throws "daily_limit" if the user has hit
   // the day cap, or a rate-limit error otherwise.
   try {
-    await convex.mutation(api.ai.insight_storage.reserveChatTurn, {});
+    await convex.mutation(api.ai.chat_storage.reserveChatTurn, {});
   } catch (e) {
     const msg = e instanceof Error ? e.message : "";
     if (msg.includes("daily_limit")) {
@@ -131,7 +131,7 @@ export async function POST(request: Request) {
 
   const typedThreadId = threadId as Id<"chatThreads">;
   const priorMessages = await convex.query(
-    api.ai.insight_storage.listChatMessages,
+    api.ai.chat_storage.listChatMessages,
     { limit: 20, threadId: typedThreadId },
   );
 
@@ -282,7 +282,7 @@ export async function POST(request: Request) {
         controller.close();
 
         convex
-          .mutation(api.ai.insight_storage.recordChatTurn, {
+          .mutation(api.ai.chat_storage.recordChatTurn, {
             threadId: typedThreadId,
             userMessage: message.trim(),
             assistantMessage: assistantText,

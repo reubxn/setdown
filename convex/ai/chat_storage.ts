@@ -1,20 +1,7 @@
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import {
-  internalMutation,
-  internalQuery,
-  mutation,
-  query,
-} from "../_generated/server";
+import { mutation, query } from "../_generated/server";
 import { rateLimiter } from "../rateLimits";
-
-const KIND = v.union(
-  v.literal("overview"),
-  v.literal("exercise"),
-  v.literal("plateau"),
-  v.literal("balance"),
-  v.literal("streak"),
-);
 
 const MAX_TITLE_LEN = 200;
 const MAX_USER_MESSAGE_LEN = 10_000;
@@ -87,95 +74,6 @@ const displayValidator = v.union(
   statHighlightDisplay,
   sessionListDisplay,
 );
-
-export const listForVersion = internalQuery({
-  args: { datasetVersion: v.number() },
-  handler: async (ctx, { datasetVersion }) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) return [];
-    const rows = await ctx.db
-      .query("insights")
-      .withIndex("by_user_version_kind", (q) =>
-        q.eq("userId", userId).eq("datasetVersion", datasetVersion),
-      )
-      .collect();
-    return rows.map((r) => ({
-      _id: r._id,
-      kind: r.kind,
-      scope: r.scope ?? null,
-      content: r.content,
-      generatedAt: r.generatedAt,
-      model: r.model,
-    }));
-  },
-});
-
-export const writeInsight = internalMutation({
-  args: {
-    datasetVersion: v.number(),
-    kind: KIND,
-    content: v.string(),
-    model: v.string(),
-    scope: v.optional(v.string()),
-  },
-  handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
-    const existing = await ctx.db
-      .query("insights")
-      .withIndex("by_user_version_kind", (q) =>
-        q
-          .eq("userId", userId)
-          .eq("datasetVersion", args.datasetVersion)
-          .eq("kind", args.kind),
-      )
-      .collect();
-    for (const row of existing) {
-      if ((row.scope ?? undefined) === args.scope) {
-        await ctx.db.delete(row._id);
-      }
-    }
-    await ctx.db.insert("insights", {
-      userId,
-      datasetVersion: args.datasetVersion,
-      kind: args.kind,
-      scope: args.scope,
-      content: args.content,
-      generatedAt: Date.now(),
-      model: args.model,
-    });
-  },
-});
-
-export const getInsightsForCurrentDataset = query({
-  args: {},
-  handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) return null;
-    const dataset = await ctx.db
-      .query("datasets")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .order("desc")
-      .first();
-    if (!dataset) return null;
-    const rows = await ctx.db
-      .query("insights")
-      .withIndex("by_user_version_kind", (q) =>
-        q.eq("userId", userId).eq("datasetVersion", dataset.version),
-      )
-      .collect();
-    return {
-      datasetVersion: dataset.version,
-      insights: rows.map((r) => ({
-        kind: r.kind,
-        scope: r.scope ?? null,
-        content: r.content,
-        generatedAt: r.generatedAt,
-        model: r.model,
-      })),
-    };
-  },
-});
 
 export const listChatMessages = query({
   args: {

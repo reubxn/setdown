@@ -32,11 +32,6 @@ export default query({
       .withIndex("by_user_date", (q) => q.eq("userId", userId))
       .collect();
 
-    const insights = await ctx.db
-      .query("insights")
-      .withIndex("by_user_version_kind", (q) => q.eq("userId", userId))
-      .collect();
-
     const chatMessages = await ctx.db
       .query("chatMessages")
       .withIndex("by_user_created", (q) => q.eq("userId", userId))
@@ -52,7 +47,6 @@ export default query({
       },
       datasets: datasets.map(stripIds),
       workoutSets: workoutSets.map(stripIds),
-      insights: insights.map(stripIds),
       chatMessages: chatMessages.map(stripIds),
     };
   },
