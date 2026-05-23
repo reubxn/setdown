@@ -165,20 +165,6 @@ export const TOOL_DEFINITIONS: Anthropic.Tool[] = [
     },
   },
   {
-    name: "get_body_measurements",
-    description:
-      "User-logged bodyweight, body fat %, and circumference measurements over time. May be empty if the user hasn't logged any.",
-    input_schema: {
-      type: "object" as const,
-      properties: {
-        weeks: {
-          type: "number",
-          description: "How many weeks back to include (default 26).",
-        },
-      },
-    },
-  },
-  {
     name: "get_muscle_group_breakdown",
     description:
       "Volume distribution across high-level muscle buckets (push/pull/legs/core/arms) over a window. Use for balance questions.",
@@ -329,14 +315,6 @@ export const TOOL_DEFINITIONS: Anthropic.Tool[] = [
 
 export interface ToolContext {
   dataset: WorkoutDataset;
-  bodyMeasurements: BodyMeasurement[];
-}
-
-export interface BodyMeasurement {
-  date: number;
-  weightKg: number | null;
-  bodyFatPct: number | null;
-  measurements: Record<string, number>;
 }
 
 // ── Tool runner ──────────────────────────────────────────────────────────
@@ -383,13 +361,6 @@ export function runTool(
     case "get_prs":
       return {
         payload: toolPRs(ctx.dataset, Math.min(toNum(args.limit, 10), 25)),
-      };
-    case "get_body_measurements":
-      return {
-        payload: toolBodyMeasurements(
-          ctx.bodyMeasurements,
-          toNum(args.weeks, 26),
-        ),
       };
     case "get_muscle_group_breakdown":
       return {
@@ -611,43 +582,6 @@ function toolPRs(dataset: WorkoutDataset, limit: number) {
       metric: p.metric,
       value: p.value,
       date: format(p.date, "yyyy-MM-dd"),
-    })),
-  };
-}
-
-function toolBodyMeasurements(
-  measurements: BodyMeasurement[],
-  weeks: number,
-) {
-  if (measurements.length === 0) {
-    return {
-      count: 0,
-      note: "User has not logged any body measurements.",
-      entries: [],
-    };
-  }
-  const cutoff = Date.now() - weeks * 7 * 24 * 60 * 60 * 1000;
-  const filtered = measurements
-    .filter((m) => m.date >= cutoff)
-    .sort((a, b) => a.date - b.date);
-
-  const weights = filtered
-    .filter((m) => m.weightKg != null)
-    .map((m) => m.weightKg as number);
-  const trend =
-    weights.length >= 2
-      ? Math.round((weights[weights.length - 1] - weights[0]) * 100) / 100
-      : null;
-
-  return {
-    count: filtered.length,
-    windowWeeks: weeks,
-    weightChangeKg: trend,
-    entries: filtered.map((m) => ({
-      date: format(new Date(m.date), "yyyy-MM-dd"),
-      weightKg: m.weightKg,
-      bodyFatPct: m.bodyFatPct,
-      measurements: m.measurements,
     })),
   };
 }

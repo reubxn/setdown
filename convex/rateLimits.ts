@@ -3,12 +3,6 @@ import { components } from "./_generated/api";
 
 export const rateLimiter = new RateLimiter(components.rateLimiter, {
   uploadDataset: { kind: "token bucket", rate: 10, period: HOUR, capacity: 10 },
-  saveBodyMeasurement: {
-    kind: "token bucket",
-    rate: 60,
-    period: HOUR,
-    capacity: 60,
-  },
   deleteAccount: {
     kind: "fixed window",
     rate: 3,

@@ -83,12 +83,4 @@ export default defineSchema({
   })
     .index("by_user_created", ["userId", "createdAt"])
     .index("by_thread_created", ["threadId", "createdAt"]),
-
-  bodyMeasurements: defineTable({
-    userId: v.id("users"),
-    date: v.number(),
-    weightKg: v.optional(v.number()),
-    bodyFatPct: v.optional(v.number()),
-    measurements: v.optional(v.record(v.string(), v.number())),
-  }).index("by_user_date", ["userId", "date"]),
 });

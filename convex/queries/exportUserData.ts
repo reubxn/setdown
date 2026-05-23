@@ -42,11 +42,6 @@ export default query({
       .withIndex("by_user_created", (q) => q.eq("userId", userId))
       .collect();
 
-    const bodyMeasurements = await ctx.db
-      .query("bodyMeasurements")
-      .withIndex("by_user_date", (q) => q.eq("userId", userId))
-      .collect();
-
     return {
       exportedAt: Date.now(),
       user: {
@@ -59,7 +54,6 @@ export default query({
       workoutSets: workoutSets.map(stripIds),
       insights: insights.map(stripIds),
       chatMessages: chatMessages.map(stripIds),
-      bodyMeasurements: bodyMeasurements.map(stripIds),
     };
   },
 });
