@@ -8,7 +8,6 @@ const MAX_FILENAME = 256;
 const MAX_EXERCISE_NAME = 200;
 const MAX_EXERCISE_SLUG = 200;
 const MAX_NOTES = 2000;
-const MAX_WEIGHT_KG = 10_000;
 const MAX_REPS = 10_000;
 const MAX_SET_ORDER = 1000;
 const MAX_DURATION_SEC = 86_400;
@@ -76,11 +75,7 @@ export default mutation({
       ) {
         throw new Error("date out of range");
       }
-      if (
-        !Number.isFinite(s.weightKg) ||
-        s.weightKg < 0 ||
-        s.weightKg > MAX_WEIGHT_KG
-      ) {
+      if (!Number.isFinite(s.weightKg) || s.weightKg < 0) {
         throw new Error("weightKg out of range");
       }
       if (!Number.isFinite(s.reps) || s.reps < 0 || s.reps > MAX_REPS) {
