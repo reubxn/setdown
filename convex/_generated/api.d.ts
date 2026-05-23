@@ -16,6 +16,7 @@ import type * as mutations_uploadDataset from "../mutations/uploadDataset.js";
 import type * as mutations_wipeData from "../mutations/wipeData.js";
 import type * as queries_exportUserData from "../queries/exportUserData.js";
 import type * as queries_getCurrentUser from "../queries/getCurrentUser.js";
+import type * as queries_getDatasetForAi from "../queries/getDatasetForAi.js";
 import type * as queries_getLatestDataset from "../queries/getLatestDataset.js";
 import type * as queries_getWorkoutSets from "../queries/getWorkoutSets.js";
 import type * as rateLimits from "../rateLimits.js";
@@ -35,6 +36,7 @@ declare const fullApi: ApiFromModules<{
   "mutations/wipeData": typeof mutations_wipeData;
   "queries/exportUserData": typeof queries_exportUserData;
   "queries/getCurrentUser": typeof queries_getCurrentUser;
+  "queries/getDatasetForAi": typeof queries_getDatasetForAi;
   "queries/getLatestDataset": typeof queries_getLatestDataset;
   "queries/getWorkoutSets": typeof queries_getWorkoutSets;
   rateLimits: typeof rateLimits;
