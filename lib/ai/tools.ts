@@ -5,6 +5,7 @@
 import type Anthropic from "@anthropic-ai/sdk";
 import { format, subWeeks } from "date-fns";
 import type {
+  SetType,
   WorkoutDataset,
   WorkoutSession,
   WorkoutSet,
@@ -83,6 +84,130 @@ export function serializeDataset(d: WorkoutDataset): SerializedWorkoutDataset {
       date: s.date.toISOString(),
       sets: s.sets.map((set) => ({ ...set, date: set.date.toISOString() })),
     })),
+  };
+}
+
+// ── Convex → client-shape reconstructor ─────────────────────────────────
+//
+// The chat route stores a flat list of `workoutSets` rows in Convex. To run
+// the AI tools we need to rebuild the client-side `WorkoutDataset` shape
+// (sessions → sets, plus exercise list + date range). Legacy rows uploaded
+// before we added `setType` / `workoutName` / `sessionDurationMinutes` will
+// have those fields undefined; we fill in sensible defaults below.
+
+export interface ConvexWorkoutRow {
+  _id: string;
+  date: number;
+  exerciseName: string;
+  setOrder: number;
+  weightKg: number;
+  reps: number;
+  rpe?: number;
+  durationSec?: number;
+  setType?: SetType;
+  workoutName?: string;
+  sessionDurationMinutes?: number;
+}
+
+export interface ConvexDatasetMeta {
+  importedAt: number;
+  fileName: string;
+  dateRange: { start: number; end: number };
+  totalSets: number;
+}
+
+function setVolume(weight: number, reps: number, setType: SetType): number {
+  if (reps <= 0 || setType === "warmup") return 0;
+  return weight * reps;
+}
+
+export function datasetFromConvexRows(
+  meta: ConvexDatasetMeta,
+  rows: ConvexWorkoutRow[],
+): WorkoutDataset {
+  // Group rows into sessions keyed by (date-truncated-to-day, workoutName).
+  // Every set within a Strong session shares the same `date` value at
+  // set-level granularity, but to be defensive we floor to day precision.
+  const dayMs = 24 * 60 * 60 * 1000;
+  const sessionMap = new Map<
+    string,
+    {
+      dateMs: number;
+      workoutName: string;
+      durationMinutes: number | null;
+      sets: WorkoutSet[];
+    }
+  >();
+
+  for (const row of rows) {
+    const dayBucket = Math.floor(row.date / dayMs) * dayMs;
+    const workoutName = row.workoutName ?? "Workout";
+    const key = `${dayBucket}|${workoutName}`;
+
+    const setType: SetType = row.setType ?? "working";
+    const set: WorkoutSet = {
+      id: String(row._id),
+      date: new Date(row.date),
+      workoutName,
+      durationMinutes:
+        row.sessionDurationMinutes != null ? row.sessionDurationMinutes : null,
+      exerciseName: row.exerciseName,
+      setOrder: String(row.setOrder),
+      setType,
+      setIndex: row.setOrder,
+      weight: row.weightKg,
+      reps: row.reps,
+      distance: 0,
+      seconds: row.durationSec ?? 0,
+      rpe: row.rpe ?? null,
+      volume: setVolume(row.weightKg, row.reps, setType),
+    };
+
+    const entry = sessionMap.get(key);
+    if (entry) {
+      entry.sets.push(set);
+    } else {
+      sessionMap.set(key, {
+        dateMs: row.date,
+        workoutName,
+        durationMinutes:
+          row.sessionDurationMinutes != null
+            ? row.sessionDurationMinutes
+            : null,
+        sets: [set],
+      });
+    }
+  }
+
+  const sessions: WorkoutSession[] = [];
+  for (const [key, group] of sessionMap) {
+    const exercises = new Set(group.sets.map((s) => s.exerciseName));
+    sessions.push({
+      id: key,
+      date: new Date(group.dateMs),
+      workoutName: group.workoutName,
+      durationMinutes: group.durationMinutes,
+      sets: group.sets,
+      totalVolume: group.sets.reduce((sum, s) => sum + s.volume, 0),
+      exerciseCount: exercises.size,
+    });
+  }
+  // Match the client-side parser: newest first.
+  sessions.sort((a, b) => b.date.getTime() - a.date.getTime());
+
+  const exerciseSet = new Set<string>();
+  for (const row of rows) exerciseSet.add(row.exerciseName);
+  const exercises = [...exerciseSet].sort();
+
+  return {
+    importedAt: new Date(meta.importedAt).toISOString(),
+    fileName: meta.fileName,
+    sessions,
+    exercises,
+    dateRange: {
+      start: new Date(meta.dateRange.start),
+      end: new Date(meta.dateRange.end),
+    },
   };
 }
 

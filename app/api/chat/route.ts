@@ -5,14 +5,15 @@ import type { Id } from "@/convex/_generated/dataModel";
 import { CHAT_SYSTEM_PROMPT } from "@/lib/ai/chat-prompts";
 import {
   TOOL_DEFINITIONS,
-  rehydrateDataset,
+  datasetFromConvexRows,
   runTool,
-  type SerializedWorkoutDataset,
 } from "@/lib/ai/tools";
 import type { ChatDisplay } from "@/lib/ai/display";
 
 const DAILY_LIMIT = 50;
-const MAX_BODY_BYTES = 1_500_000; // ~1.5 MB — enough to fit a season of training
+// Body now only carries { message, threadId, pageContext } — the dataset
+// is fetched server-side from Convex. 64KB leaves ample headroom.
+const MAX_BODY_BYTES = 64_000;
 const MAX_TOOL_TURNS = 6;
 const MAX_HISTORY_CHARS = 4096;
 const MODEL = "claude-sonnet-4-6";
@@ -84,7 +85,6 @@ export async function POST(request: Request) {
     message?: string;
     threadId?: string;
     pageContext?: string;
-    dataset?: SerializedWorkoutDataset;
   };
   try {
     body = JSON.parse(raw);
@@ -92,10 +92,10 @@ export async function POST(request: Request) {
     return Response.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { message, threadId, pageContext, dataset: serializedDataset } = body;
-  if (!message?.trim() || !threadId || !serializedDataset) {
+  const { message, threadId, pageContext } = body;
+  if (!message?.trim() || !threadId) {
     return Response.json(
-      { error: "message, threadId, and dataset are required" },
+      { error: "message and threadId are required" },
       { status: 400 },
     );
   }
@@ -135,7 +135,22 @@ export async function POST(request: Request) {
     { limit: 20, threadId: typedThreadId },
   );
 
-  const dataset = rehydrateDataset(serializedDataset);
+  // Fetch the dataset server-side. This replaces the giant payload that the
+  // client used to ship on every chat turn.
+  const datasetForAi = await convex.query(
+    api.queries.getDatasetForAi.default,
+    {},
+  );
+  if (!datasetForAi) {
+    return Response.json(
+      { error: "Upload a workout CSV first to use the coach." },
+      { status: 400 },
+    );
+  }
+  const dataset = datasetFromConvexRows(
+    datasetForAi.meta,
+    datasetForAi.sets,
+  );
 
   // Truncate stored message content before re-feeding into the model so a
   // poisoned history can't multiply token cost across turns.

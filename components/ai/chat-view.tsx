@@ -14,7 +14,6 @@ import { useAuthToken } from "@convex-dev/auth/react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { useDataset } from "@/context/dataset-context";
-import { serializeDataset } from "@/lib/ai/tools";
 import type { ChatMessage as ChatMessageType } from "@/lib/types";
 import {
   type ChatDisplay,
@@ -142,8 +141,6 @@ export function ChatView({ pathname }: ChatViewProps) {
       setTransient((m) => [...m, userMsg, assistantPlaceholder]);
       setStreaming(true);
 
-      const serialized = serializeDataset(dataset);
-
       try {
         const res = await fetch("/api/chat", {
           method: "POST",
@@ -155,7 +152,6 @@ export function ChatView({ pathname }: ChatViewProps) {
             message: text.trim(),
             threadId,
             pageContext: pathname,
-            dataset: serialized,
           }),
         });
         if (!res.ok) {

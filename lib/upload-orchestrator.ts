@@ -2,7 +2,7 @@ import { parseStrongCsv, slugifyExercise } from "./parse-strong-csv";
 import { saveDataset } from "./storage";
 import { convex } from "./convex-client";
 import { api } from "@/convex/_generated/api";
-import type { WorkoutDataset, WorkoutSet } from "./types";
+import type { WorkoutDataset, WorkoutSession, WorkoutSet } from "./types";
 
 export type UploadStage =
   | "idle"
@@ -38,16 +38,39 @@ function slugify(name: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
-function toConvexSets(sets: WorkoutSet[]) {
-  return sets.map((s, i) => ({
-    date: s.date.getTime(),
-    exerciseName: s.exerciseName,
-    exerciseSlug: slugify(s.exerciseName),
-    setOrder: s.setIndex ?? i,
-    weightKg: s.weight,
-    reps: s.reps,
-    rpe: s.rpe ?? undefined,
-    durationSec: s.seconds > 0 ? s.seconds : undefined,
+interface SetWithSessionCtx {
+  set: WorkoutSet;
+  session: WorkoutSession;
+  fallbackOrder: number;
+}
+
+function flattenWithSessionContext(
+  sessions: WorkoutSession[],
+): SetWithSessionCtx[] {
+  const out: SetWithSessionCtx[] = [];
+  let i = 0;
+  for (const session of sessions) {
+    for (const set of session.sets) {
+      out.push({ set, session, fallbackOrder: i++ });
+    }
+  }
+  return out;
+}
+
+function toConvexSets(rows: SetWithSessionCtx[]) {
+  return rows.map(({ set, session, fallbackOrder }) => ({
+    date: set.date.getTime(),
+    exerciseName: set.exerciseName,
+    exerciseSlug: slugify(set.exerciseName),
+    setOrder: set.setIndex ?? fallbackOrder,
+    weightKg: set.weight,
+    reps: set.reps,
+    rpe: set.rpe ?? undefined,
+    durationSec: set.seconds > 0 ? set.seconds : undefined,
+    setType: set.setType,
+    workoutName: session.workoutName || undefined,
+    sessionDurationMinutes:
+      session.durationMinutes != null ? session.durationMinutes : undefined,
   }));
 }
 
@@ -70,26 +93,28 @@ export async function uploadCsvFile(
 
   emit({ stage: "validating" });
   const dataset = result.dataset;
-  const allSets = dataset.sessions.flatMap((s) => s.sets);
-  if (allSets.length === 0) {
+  // Flatten while preserving parent-session context so we can write each
+  // set's workoutName / sessionDurationMinutes through to Convex.
+  const rows = flattenWithSessionContext(dataset.sessions);
+  if (rows.length === 0) {
     const msg = "No workout sets found in file.";
     emit({ stage: "error", error: msg });
     throw new Error(msg);
   }
 
-  emit({ stage: "saving", rowCount: allSets.length });
+  emit({ stage: "saving", rowCount: rows.length });
   if (isAuthenticated) {
     await convex.mutation(api.mutations.uploadDataset.default, {
       sourceFilename: file.name,
-      sets: toConvexSets(allSets),
+      sets: toConvexSets(rows),
     });
-    emit({ stage: "done", rowCount: allSets.length });
-    return { dataset, rowCount: allSets.length, destination: "convex" };
+    emit({ stage: "done", rowCount: rows.length });
+    return { dataset, rowCount: rows.length, destination: "convex" };
   }
 
   await saveDataset(dataset);
-  emit({ stage: "done", rowCount: allSets.length });
-  return { dataset, rowCount: allSets.length, destination: "indexeddb" };
+  emit({ stage: "done", rowCount: rows.length });
+  return { dataset, rowCount: rows.length, destination: "indexeddb" };
 }
 
 export { slugifyExercise };

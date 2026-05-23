@@ -12,6 +12,8 @@ const MAX_WEIGHT_KG = 10_000;
 const MAX_REPS = 10_000;
 const MAX_SET_ORDER = 1000;
 const MAX_DURATION_SEC = 86_400;
+const MAX_WORKOUT_NAME = 200;
+const MAX_SESSION_DURATION_MIN = 24 * 60; // 1 day
 
 export default mutation({
   args: {
@@ -27,6 +29,17 @@ export default mutation({
         rpe: v.optional(v.number()),
         durationSec: v.optional(v.number()),
         notes: v.optional(v.string()),
+        setType: v.optional(
+          v.union(
+            v.literal("warmup"),
+            v.literal("working"),
+            v.literal("dropset"),
+            v.literal("failure"),
+            v.literal("unknown"),
+          ),
+        ),
+        workoutName: v.optional(v.string()),
+        sessionDurationMinutes: v.optional(v.number()),
       }),
     ),
   },
@@ -94,6 +107,20 @@ export default mutation({
       ) {
         throw new Error("durationSec out of range");
       }
+      if (
+        s.workoutName !== undefined &&
+        s.workoutName.length > MAX_WORKOUT_NAME
+      ) {
+        throw new Error(`workoutName exceeds ${MAX_WORKOUT_NAME} chars`);
+      }
+      if (
+        s.sessionDurationMinutes !== undefined &&
+        (!Number.isFinite(s.sessionDurationMinutes) ||
+          s.sessionDurationMinutes < 0 ||
+          s.sessionDurationMinutes > MAX_SESSION_DURATION_MIN)
+      ) {
+        throw new Error("sessionDurationMinutes out of range");
+      }
     }
 
     const existing = await ctx.db
@@ -140,6 +167,9 @@ export default mutation({
         rpe: s.rpe,
         durationSec: s.durationSec,
         notes: s.notes,
+        setType: s.setType,
+        workoutName: s.workoutName,
+        sessionDurationMinutes: s.sessionDurationMinutes,
       });
     }
 

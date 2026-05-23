@@ -39,8 +39,27 @@ export default defineSchema({
     weightKg: v.number(),
     reps: v.number(),
     rpe: v.optional(v.number()),
+    // Per-set duration in seconds (distance/time exercises, e.g. plank).
+    // Distinct from `sessionDurationMinutes` below, which is the whole workout.
     durationSec: v.optional(v.number()),
     notes: v.optional(v.string()),
+    // Optional set classification used by AI tools to filter warmups out
+    // of volume calculations. Legacy rows without this default to "working"
+    // at read time.
+    setType: v.optional(
+      v.union(
+        v.literal("warmup"),
+        v.literal("working"),
+        v.literal("dropset"),
+        v.literal("failure"),
+        v.literal("unknown"),
+      ),
+    ),
+    // Name of the parent workout session (e.g. "Push Day").
+    workoutName: v.optional(v.string()),
+    // Duration of the whole workout session in minutes (same value on every
+    // set belonging to that session). Not to be confused with `durationSec`.
+    sessionDurationMinutes: v.optional(v.number()),
   })
     .index("by_user_exercise_date", ["userId", "exerciseSlug", "date"])
     .index("by_user_date", ["userId", "date"]),
