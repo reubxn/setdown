@@ -2,10 +2,11 @@
 
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Upload } from "lucide-react";
+import { Upload, HelpCircle } from "lucide-react";
 import { parseStrongCsv } from "@/lib/parse-strong-csv";
 import { useDataset } from "@/context/dataset-context";
 import { LoginModal } from "@/components/auth/login-modal";
+import { ExportTutorial } from "@/components/landing/export-tutorial";
 import { cn } from "@/components/ui/utils";
 
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
@@ -35,6 +36,7 @@ function HeroDropzone() {
   const [error, setError] = useState<string | null>(null);
   const [parsing, setParsing] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
+  const [tutorialOpen, setTutorialOpen] = useState(false);
   const { setDataset } = useDataset();
   const router = useRouter();
 
@@ -126,7 +128,19 @@ function HeroDropzone() {
           sign in to save and chat with AI
         </button>
       </p>
+      <button
+        type="button"
+        onClick={() => setTutorialOpen(true)}
+        className="mx-auto flex items-center gap-1.5 text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
+      >
+        <HelpCircle className="h-3.5 w-3.5" />
+        How do I export from Strong?
+      </button>
       <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
+      <ExportTutorial
+        open={tutorialOpen}
+        onClose={() => setTutorialOpen(false)}
+      />
     </div>
   );
 }
