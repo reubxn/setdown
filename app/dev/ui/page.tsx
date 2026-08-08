@@ -201,11 +201,11 @@ function PageInner() {
           align="start"
           trigger={<Button variant="secondary">open menu</Button>}
         >
-          <DropdownLabel>Account</DropdownLabel>
-          <DropdownItem>Profile</DropdownItem>
+          <DropdownLabel>Dataset</DropdownLabel>
+          <DropdownItem>Details</DropdownItem>
           <DropdownItem>Settings</DropdownItem>
           <DropdownSeparator />
-          <DropdownItem variant="danger">Sign out</DropdownItem>
+          <DropdownItem variant="danger">Clear data</DropdownItem>
         </Dropdown>
       </Section>
 
@@ -231,7 +231,7 @@ function PageInner() {
           open={modal}
           onClose={() => setModal(false)}
           title="Delete dataset?"
-          description="This removes all workout records from your account."
+          description="This removes all workout records from this browser."
           footer={
             <>
               <Button variant="ghost" onClick={() => setModal(false)}>
@@ -248,10 +248,10 @@ function PageInner() {
         <SlideOver
           open={slide}
           onClose={() => setSlide(false)}
-          title="AI coach"
-          description="Ask anything about your training."
+          title="Session details"
+          description="Everything logged in this workout."
         >
-          <p>This is the slide-over body. Chat lives here.</p>
+          <p>This is the slide-over body. Panel content lives here.</p>
         </SlideOver>
       </Section>
 

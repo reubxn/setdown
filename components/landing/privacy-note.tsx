@@ -12,8 +12,8 @@ export function PrivacyNote() {
             Your data, your device
           </h3>
           <p className="mt-1 text-sm text-[var(--text-secondary)]">
-            Your data lives on your device. Sign in only if you want to save it
-            across devices or chat with AI.
+            Your export is parsed right here in your browser and stored only on
+            this device. Nothing is uploaded, and no account is required.
           </p>
         </div>
       </div>

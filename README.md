@@ -45,9 +45,10 @@ Then open [setdown](https://setdown.gradiense.com) (or run locally below) and dr
 
 ```bash
 npm install
-cp .env.example .env.local
 npm run dev
 ```
+
+No environment variables, no API keys, nothing to configure.
 
 Open [http://localhost:3000](http://localhost:3000) and upload your `strong_workouts.csv`.
 
@@ -64,7 +65,9 @@ Open [http://localhost:3000](http://localhost:3000) and upload your `strong_work
 
 ## Privacy
 
-Your CSV is processed in the browser. Workout data is not stored on the server.
+There is no backend. There is no account and nothing to sign in to.
+
+Your CSV is read and parsed entirely in the browser, and the parsed result is stored in IndexedDB on your device. Nothing is uploaded, and there is no server-side storage of any kind. Clearing your data in settings (or clearing site data in your browser) removes it for good.
 
 ## License
 

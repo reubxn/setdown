@@ -1,4 +1,4 @@
-// <SlideOver open={open} onClose={...} title="Chat">...</SlideOver>
+// <SlideOver open={open} onClose={...} title="Settings">...</SlideOver>
 "use client";
 
 import { useEffect, useId, useRef, type ReactNode } from "react";

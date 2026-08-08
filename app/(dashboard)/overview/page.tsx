@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { format, isWithinInterval, startOfMonth, endOfMonth } from "date-fns";
 import { BarChart3 } from "lucide-react";
 import { useDataset } from "@/context/dataset-context";
-import { useAuth } from "@/context/auth-context";
 import { usePreferences } from "@/context/preferences-context";
 import { UploadUnitsPrompt } from "@/components/upload/upload-units-prompt";
 import { PageShell } from "@/components/layout/page-shell";
@@ -26,12 +25,10 @@ import {
 } from "@/lib/metrics";
 import { computeStreaks } from "@/lib/derive/streaks";
 import { uploadCsvFile } from "@/lib/upload-orchestrator";
-import { parseStrongCsv } from "@/lib/parse-strong-csv";
 import { OverviewSkeleton } from "@/components/loading/page-skeletons";
 
 function OverviewEmptyState() {
   const { setDataset } = useDataset();
-  const { isAuthenticated } = useAuth();
   const { prefs, setUnits } = usePreferences();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -43,20 +40,8 @@ function OverviewEmptyState() {
       setError(null);
       setBusy(true);
       try {
-        if (isAuthenticated) {
-          const { dataset } = await uploadCsvFile(file, {
-            isAuthenticated: true,
-          });
-          await setDataset(dataset);
-        } else {
-          const text = await file.text();
-          const result = parseStrongCsv(text, file.name);
-          if ("error" in result) {
-            setError(result.error);
-            return;
-          }
-          await setDataset(result.dataset);
-        }
+        const { dataset } = await uploadCsvFile(file);
+        await setDataset(dataset);
         router.push("/overview");
       } catch (e) {
         setError(e instanceof Error ? e.message : "Upload failed.");
@@ -64,7 +49,7 @@ function OverviewEmptyState() {
         setBusy(false);
       }
     },
-    [isAuthenticated, router, setDataset],
+    [router, setDataset],
   );
 
   const onFile = useCallback(

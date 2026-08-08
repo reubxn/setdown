@@ -19,18 +19,15 @@ workflow: [workflow.md](./WORKFLOW.md)
 | track | name | status | branch | pr | agent | notes |
 |---|---|---|---|---|---|---|
 | 0.1 | design tokens & primitives | done | `track/0.1-design-tokens` | [#3](https://github.com/reubxn/setdown/pull/3) | tab-a | merged |
-| 0.2 | convex setup & schema | done | `track/0.2-convex-setup` | [#4](https://github.com/reubxn/setdown/pull/4) | tab-b | merged |
-| 1.0 | auth context & login | pr | `track/1.0-auth` | [#6](https://github.com/reubxn/setdown/pull/6) | tab-a | edits `convex/schema.ts` (0.2-owned) to align users with authTables — see notes |
 | 1.1 | design system components | wip | `track/1.1-design-system` | - | tab-b | needs 0.1 |
 | 1.2 | landing page | pr | `track/1.2-landing` | [#9](https://github.com/reubxn/setdown/pull/9) | tab-1 | needs 0.1, 1.1, 1.4 (stub ok); dropzone stubbed inline in hero, 1.4 replaces |
-| 1.3 | nav shell rebuild | todo | `track/1.3-nav-shell` | - | - | needs 0.1, 1.1, 1.0 |
-| 1.4 | upload flow rewrite | pr | `track/1.4-upload` | [#10](https://github.com/reubxn/setdown/pull/10) | tab-3 | needs 0.1, 1.1, 0.2 |
+| 1.3 | nav shell rebuild | todo | `track/1.3-nav-shell` | - | - | needs 0.1, 1.1 |
+| 1.4 | upload flow rewrite | pr | `track/1.4-upload` | [#10](https://github.com/reubxn/setdown/pull/10) | tab-3 | needs 0.1, 1.1 |
 | 1.5 | dashboard overview | pr | `track/1.5-overview` | [#18](https://github.com/reubxn/setdown/pull/18) | tab-1 | needs 0.1, 1.1, 1.3 |
 | 1.6 | exercise pages | todo | `track/1.6-exercises` | - | - | needs 0.1, 1.1, 1.3 |
 | 1.7 | history + session detail | todo | `track/1.7-history` | - | - | needs 0.1, 1.1, 1.3 |
-| 1.8 | ai subsystem | todo | `track/1.8-ai` | - | - | needs 0.2, 1.0, 1.1 |
-| 1.9 | analytics (muscle/streak/body) | wip | `track/1.9-analytics` | - | tab-5 | needs 0.1, 1.1, 0.2 |
-| 1.10 | settings + data mgmt | pr | `track/1.10-settings` | [#14](https://github.com/reubxn/setdown/pull/14) | tab-6 | needs 0.1, 1.1, 0.2, 1.4 |
+| 1.9 | analytics (muscle/streak/body) | wip | `track/1.9-analytics` | - | tab-5 | needs 0.1, 1.1 |
+| 1.10 | settings + data mgmt | pr | `track/1.10-settings` | [#14](https://github.com/reubxn/setdown/pull/14) | tab-6 | needs 0.1, 1.1, 1.4 |
 | 2.1 | migrate old component usages | pr | `track/2.1-migrate` | [#21](https://github.com/reubxn/setdown/pull/21) | tab-1 | phase 2 |
 | 2.2 | empty states everywhere | todo | `track/2.2-empty-states` | - | - | phase 2 |
 | 2.3 | loading & error states | pr | `track/2.3-loading-errors` | [#25](https://github.com/reubxn/setdown/pull/25) | tab-1 | phase 2 |
@@ -53,7 +50,7 @@ workflow: [workflow.md](./WORKFLOW.md)
 
 ## conflicts / shared files
 
-- `app/layout.tsx` is touched by 0.2 (ConvexProvider) and 1.0 (AuthProvider). 0.2 must merge before 1.0 opens its pr.
+- `app/layout.tsx` is shared. only one track should hold it at a time; claim it in the notes log first.
 - `components/card.tsx` and other deprecated files: do not delete in phase 1, only in 2.1.
 - if you need to edit a file not in your "owned" list, leave a note in the row and pick it up in pr review.
 
@@ -62,5 +59,4 @@ workflow: [workflow.md](./WORKFLOW.md)
 append-only. one line each, datestamped.
 
 - 2026-05-21: spec drafted, board initialized
-- 2026-05-21: track 1.0 (tab-a) reshapes `convex/schema.ts` users table to extend `authTables.users` (was overriding it, breaking auth). flagged on pr #6 for 0.2 review.
-- 2026-05-21: track 1.8 (tab-4) adds new dir `convex/ai/insight_storage.ts` (public + internal queries/mutations for insights and chat). schedule of `generateInsights` from `uploadDataset` is left to track 1.4 once that mutation is implemented (action is callable directly).
+- 2026-05-21: track 1.4 (tab-3) owns the indexeddb keys. 1.9 stores body measurements under its own key so a csv replace doesn't wipe them.

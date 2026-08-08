@@ -39,8 +39,8 @@ export function UploadConfirmReplace({
       }
     >
       <p>
-        Your AI chat history and body measurements stay put — we&apos;re just
-        catching your workouts up to the new export.
+        This replaces the workouts stored in this browser with the ones in your
+        new export.
       </p>
     </Modal>
   );
