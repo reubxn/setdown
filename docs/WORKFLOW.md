@@ -1,6 +1,6 @@
 # workflow
 
-how we ship the ux overhaul. keep it light.
+how i ship changes to setdown. keep it light.
 
 ## repo
 
@@ -10,60 +10,38 @@ how we ship the ux overhaul. keep it light.
 
 ## branching
 
-- one branch per track: `track/<id>-<slug>` (e.g. `track/1.5-overview`)
+- one branch per change: `<type>/<slug>`, e.g. `fix/upload-weight-ceiling`, `chore/tidy-docs`, `feat/export-tutorial-modal`
 - branch off latest `main`
-- rebase on `main` before opening pr if stale
+- rebase on `main` before opening a pr if stale
 - short-lived. merge or close within a few days.
-
-## worktrees (required for parallel tracks)
-
-multiple tabs on the same `/Users/reuba/strong` checkout collide — one tab switches the branch under another mid-build, stash entries mix, node_modules gets contaminated. always use a dedicated worktree per track:
-
-```
-cd /Users/reuba/strong
-git worktree add ../strong-track-<id> -b track/<id>-<slug>
-cd ../strong-track-<id>
-npm install   # first time only; subsequent worktrees can `ln -s ../strong/node_modules .` if disk space matters
-```
-
-work in `../strong-track-<id>` for the entire track. when done and merged, clean up:
-
-```
-cd /Users/reuba/strong
-git worktree remove ../strong-track-<id>
-```
-
-if you forget and end up with two tabs in `/Users/reuba/strong`, stop, `git stash`, create the worktree, then `git stash pop` inside it.
 
 ## commits
 
-- author: you (reuban ramsden). **never** add `Co-Authored-By: Claude` or "generated with claude code" footers.
 - style: lowercase, brief, present tense. example: `add dropzone component`, `wire indexeddb persistence`, `fix sidebar overflow on narrow widths`
 - one logical change per commit where reasonable. squash on merge if a branch got noisy.
 - no emojis.
 
 ## prs
 
-- title: `track/<id>: <lowercase brief description>`
+- title: lowercase, brief. prefix with `fix:` / `docs:` / `chore:` when it helps.
 - body template:
   ```
   ## what
   one-line summary.
 
   ## why
-  link to spec section if relevant.
+  the reasoning, not a restatement of the diff.
 
   ## test
   - [ ] item
   - [ ] item
   ```
-- author: you. no claude attribution.
-- request review from yourself (single-maintainer repo) or just self-merge after ci passes.
+- single-maintainer repo, so self-merge once ci passes.
 - delete branch on merge.
 
 ## ci
 
-minimal — just stop bad code reaching main. runs on every pr.
+minimal. just stop bad code reaching main. runs on every pr.
 
 - typecheck (`tsc --noEmit`)
 - lint (`next lint`)
@@ -78,7 +56,7 @@ npm run lint && npx tsc --noEmit && npm test && npm run build
 
 do not push or open a pr until those four pass locally.
 
-no deploy preview workflow needed — vercel handles that automatically per pr.
+no deploy preview workflow needed. vercel handles that automatically per pr.
 
 ## release / deploy
 
@@ -90,16 +68,7 @@ no deploy preview workflow needed — vercel handles that automatically per pr.
 
 none. the app has no backend and no secrets, so `npm install && npm run dev` is the whole setup. same in vercel: no env vars to configure.
 
-## coordination
-
-- status board: [track_handoff.md](./TRACK_HANDOFF.md). update on start + finish.
-- spec: [ux_overhaul_spec.md](./UX_OVERHAUL_SPEC.md). source of truth for scope.
-- conflicts on shared files: flag them in the handoff notes log before you start editing.
-
 ## do not
 
 - do not push directly to main
-- do not add claude attribution to commits or prs
-- do not delete deprecated components in phase 1 (only in track 2.1)
-- do not edit files outside your track's owned list without flagging in handoff
 - do not skip ci or merge red prs
