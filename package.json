@@ -11,13 +11,8 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.39.0",
-    "@auth/core": "^0.37.4",
-    "@convex-dev/auth": "^0.0.92",
-    "@convex-dev/rate-limiter": "^0.3.2",
     "@tailwindcss/container-queries": "^0.1.1",
     "clsx": "^2.1.1",
-    "convex": "^1.39.1",
     "date-fns": "^4.1.0",
     "idb-keyval": "^6.2.1",
     "lucide-react": "^0.460.0",
@@ -26,9 +21,7 @@
     "react": "^19.0.0",
     "react-body-highlighter": "^2.0.5",
     "react-dom": "^19.0.0",
-    "react-markdown": "^10.1.0",
     "recharts": "^2.15.0",
-    "remark-gfm": "^4.0.1",
     "tailwind-merge": "^2.5.4"
   },
   "devDependencies": {

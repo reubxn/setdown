@@ -185,20 +185,3 @@ export function SessionDetailSkeleton() {
     </div>
   );
 }
-
-export function ChatHistorySkeleton() {
-  return (
-    <div className="space-y-3" aria-label="Loading chat history">
-      {Array.from({ length: 4 }).map((_, i) => (
-        <div
-          key={i}
-          className={i % 2 === 0 ? "flex justify-start" : "flex justify-end"}
-        >
-          <Skeleton
-            className={`h-16 ${i % 2 === 0 ? "w-3/4" : "w-1/2"} rounded-lg`}
-          />
-        </div>
-      ))}
-    </div>
-  );
-}

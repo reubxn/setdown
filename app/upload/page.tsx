@@ -7,7 +7,6 @@ import { UploadProgress } from "@/components/upload/upload-progress";
 import { UploadConfirmReplace } from "@/components/upload/upload-confirm-replace";
 import { UploadUnitsPrompt } from "@/components/upload/upload-units-prompt";
 import { useDataset } from "@/context/dataset-context";
-import { useAuth } from "@/context/auth-context";
 import { usePreferences, type Units } from "@/context/preferences-context";
 import {
   uploadCsvFile,
@@ -19,7 +18,6 @@ function UploadPageInner() {
   const searchParams = useSearchParams();
   const isReplace = searchParams.get("replace") === "1";
   const { dataset, refresh } = useDataset();
-  const { isAuthenticated } = useAuth();
   const { prefs, setUnits } = usePreferences();
 
   const [pendingFile, setPendingFile] = useState<File | null>(null);
@@ -32,10 +30,7 @@ function UploadPageInner() {
     async (file: File) => {
       setProgress({ stage: "reading" });
       try {
-        await uploadCsvFile(file, {
-          isAuthenticated,
-          onProgress: setProgress,
-        });
+        await uploadCsvFile(file, { onProgress: setProgress });
         await refresh();
         router.replace("/overview");
       } catch (err) {
@@ -44,7 +39,7 @@ function UploadPageInner() {
         setProgress({ stage: "error", error: message });
       }
     },
-    [isAuthenticated, refresh, router],
+    [refresh, router],
   );
 
   const proceed = useCallback(
@@ -90,9 +85,7 @@ function UploadPageInner() {
           Upload your Strong export
         </h1>
         <p className="mt-2 text-sm text-[var(--text-muted)]">
-          {isAuthenticated
-            ? "We'll save it to your account."
-            : "We'll save it to this browser. Sign in to sync across devices."}
+          It stays on this device. Nothing is uploaded to a server.
         </p>
       </div>
 

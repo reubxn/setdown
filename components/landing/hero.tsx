@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { Upload } from "lucide-react";
 import { parseStrongCsv } from "@/lib/parse-strong-csv";
 import { useDataset } from "@/context/dataset-context";
-import { LoginModal } from "@/components/auth/login-modal";
 import { cn } from "@/components/ui/utils";
 
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
@@ -34,7 +33,6 @@ function HeroDropzone() {
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [parsing, setParsing] = useState(false);
-  const [loginOpen, setLoginOpen] = useState(false);
   const { setDataset } = useDataset();
   const router = useRouter();
 
@@ -116,17 +114,6 @@ function HeroDropzone() {
           <p className="mt-3 text-sm text-[var(--danger)]">{error}</p>
         )}
       </label>
-      <p className="text-center text-sm text-[var(--text-muted)]">
-        or{" "}
-        <button
-          type="button"
-          onClick={() => setLoginOpen(true)}
-          className="text-[var(--accent)] hover:underline"
-        >
-          sign in to save and chat with AI
-        </button>
-      </p>
-      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
     </div>
   );
 }

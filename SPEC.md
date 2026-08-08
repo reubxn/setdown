@@ -24,11 +24,10 @@
 **setdown** is a personal, single-user web app that:
 
 1. Accepts a **Strong app CSV export** (drag-and-drop or file picker).
-2. Parses and stores workout history **in the browser** (no account DB in v1).
+2. Parses and stores workout history **in the browser** (IndexedDB).
 3. Shows **progress dashboards** (volume, frequency, PRs, per-exercise trends).
-4. Offers an **AI coach** powered by **Claude** (API key server-side) to answer questions about the loaded data.
 
-Privacy-first: data never leaves the device except when the user explicitly asks the AI (summarized context sent to Claude).
+Privacy-first: there is no backend and no account. Data never leaves the device.
 
 ---
 
@@ -42,13 +41,12 @@ Privacy-first: data never leaves the device except when the user explicitly asks
 | Overview dashboard | At-a-glance: workouts/week, total volume trend, recent session |
 | Exercise detail | Pick exercise → weight/rep/volume over time |
 | Workout history | List sessions; drill into sets |
-| AI Q&A | Pill input “Ask about your training…”; streaming or chunked reply |
 | WHOOP-like UI | Dark theme, cards, tabs, minimal charts, mobile-first |
 | Deploy on Vercel | Production URL on custom subdomain |
 
-### Non-goals (v1)
+### Non-goals
 
-- User accounts / multi-tenant auth
+- User accounts, sign-in, or any server-side storage
 - Syncing with Strong API (export-only)
 - Workout logging or editing
 - Native mobile app
@@ -165,9 +163,6 @@ flowchart TD
   E --> F[Overview tab]
   F --> G[Exercise detail]
   F --> H[History list]
-  F --> I[AI chat]
-  I --> J[API: summarize stats + question]
-  J --> K[Stream Claude response]
   E --> L[Settings: re-upload / clear data]
 ```
 
@@ -181,14 +176,6 @@ flowchart TD
 
 - Load dataset from IndexedDB; skip upload if present.
 - Header: date range, “Replace file” in overflow menu.
-
-### 4.3 AI flow
-
-1. User types question in pill bar (e.g. “Am I progressing on bench press?”).
-2. Client builds a **compact JSON summary** (not full 6k rows): totals, top exercises, recent 4-week deltas, PRs.
-3. `POST /api/chat` with `{ message, context }`.
-4. Server calls Claude with system prompt + context; returns streamed text.
-5. Render in insight card(s) below input; keep last N messages in session storage.
 
 ---
 
@@ -206,7 +193,7 @@ flowchart TD
 | Font | `Inter` or `Geist` via `next/font` |
 | Icons | `lucide-react`, 1.5px stroke |
 | Bottom nav | Home (Overview), Exercises, History, More (settings) |
-| Top tabs (Overview) | OVERVIEW · VOLUME · PRS · AI (underline active) |
+| Top tabs (Overview) | OVERVIEW · VOLUME · PRS (underline active) |
 | FAB | White circle `+` → “Upload new CSV” (bottom-right) |
 
 ### 5.2 Screen: Overview
@@ -221,8 +208,7 @@ flowchart TD
    - `AVG DURATION` — parsed minutes  
    - `TOP EXERCISE` — highest volume last 4 wks  
 4. **Stress-style chart card** — “TRAINING LOAD” — line chart: weekly total volume (12–16 weeks)  
-5. **Insight card** — bordered card; AI-generated weekly summary (button: “Generate insight”)  
-6. **Today’s activities** — last 3 sessions as cards: name, duration, exercise count  
+5. **Today’s activities** — last 3 sessions as cards: name, duration, exercise count  
 
 ### 5.3 Screen: Exercise detail
 
@@ -237,13 +223,7 @@ flowchart TD
 - Reverse-chronological session cards.
 - Tap → session detail: exercises grouped, sets listed, session volume footer.
 
-### 5.5 Screen: AI
-
-- Sticky pill input: “Ask about your training…”
-- Suggested chips: “Volume trend”, “Plateau risks”, “What should I focus on?”
-- Message list (user dark bubble / assistant insight card).
-
-### 5.6 Screen: Settings (More)
+### 5.5 Screen: Settings (More)
 
 - Replace CSV  
 - Clear all data  
@@ -265,62 +245,9 @@ flowchart TD
 
 ---
 
-## 7. AI integration (Claude)
+## 7. Technical architecture
 
-### 7.1 Environment
-
-```bash
-ANTHROPIC_API_KEY=sk-ant-...   # Vercel env, Production + Preview
-```
-
-Use `@anthropic-ai/sdk` in a Route Handler.
-
-### 7.2 Context payload (built client-side)
-
-Keep under **~8k tokens**:
-
-```typescript
-interface AIContext {
-  dateRange: { start: string; end: string };
-  totalSessions: number;
-  sessionsLast4Weeks: number;
-  volumeLast4Weeks: number;
-  volumePrior4Weeks: number;
-  volumeChangePercent: number;
-  workoutsPerWeekAvg: number;
-  topExercisesByVolume: { name: string; volume: number }[]; // top 10
-  recentPRs: { exercise: string; metric: string; value: number; date: string }[]; // top 15
-  exerciseTrends?: { name: string; maxWeightSeries: [string, number][] }; // only if user asks re: specific lift
-  userMessage: string;
-}
-```
-
-### 7.3 System prompt (sketch)
-
-```text
-You are a concise strength-training analyst. The user exported data from the Strong app.
-Use only the provided JSON summary. Be specific with numbers and dates.
-Prefer short paragraphs and bullet points. Flag limitations (e.g. missing RPE).
-Do not invent workouts or weights not in the context.
-```
-
-### 7.4 API route
-
-`POST /api/chat`
-
-- Body: `{ message: string, context: AIContext }`
-- Rate limit: simple in-memory or Vercel KV later (10 req/min/IP for MVP)
-- Model: `claude-sonnet-4-20250514` (or current Sonnet default)
-- `max_tokens`: 1024
-- Return: `ReadableStream` for SSE-style streaming to UI
-
-**Security:** API key never exposed to client; validate `Content-Type` and max body size (32kb).
-
----
-
-## 8. Technical architecture
-
-### 8.1 Stack
+### 7.1 Stack
 
 | Layer | Choice |
 |-------|--------|
@@ -329,18 +256,18 @@ Do not invent workouts or weights not in the context.
 | Styling | **Tailwind CSS v4** + CSS variables for theme |
 | Charts | **Recharts** |
 | CSV parse | **Papa Parse** (`papaparse`) |
-| Client storage | **IndexedDB** via `idb-keyval` or Dexie |
-| AI | `@anthropic-ai/sdk` |
+| Client storage | **IndexedDB** via `idb-keyval` |
+| Backend | None. Static/SSG front end only |
 | Deploy | **Vercel** |
 | Analytics | Optional: Vercel Analytics (privacy-friendly) |
 
-### 8.2 Project structure
+### 7.2 Project structure
 
 ```text
 setdown/
 ├── app/
 │   ├── layout.tsx              # dark theme, fonts, metadata
-│   ├── page.tsx                # redirect or overview
+│   ├── page.tsx                # landing
 │   ├── (dashboard)/
 │   │   ├── layout.tsx          # bottom nav + shell
 │   │   ├── overview/page.tsx
@@ -348,19 +275,15 @@ setdown/
 │   │   ├── exercises/[slug]/page.tsx
 │   │   ├── history/page.tsx
 │   │   ├── history/[sessionId]/page.tsx
-│   │   ├── ai/page.tsx
 │   │   └── settings/page.tsx
-│   ├── upload/page.tsx         # first-run upload
-│   └── api/
-│       └── chat/route.ts
+│   └── upload/page.tsx         # first-run upload
 ├── components/
-│   ├── ui/                     # Card, StatRow, TabBar, PillInput, FAB
+│   ├── ui/                     # Card, StatRow, TabBar, FAB
 │   ├── charts/
 │   └── upload/
 ├── lib/
 │   ├── parse-strong-csv.ts
 │   ├── metrics.ts
-│   ├── ai-context.ts
 │   └── storage.ts
 ├── public/
 ├── SPEC.md
@@ -368,7 +291,7 @@ setdown/
 └── vercel.json                 # optional headers
 ```
 
-### 8.3 Data flow
+### 7.3 Data flow
 
 ```text
 CSV file → Papa Parse → WorkoutSet[] → groupBy session → WorkoutDataset
@@ -377,32 +300,31 @@ CSV file → Papa Parse → WorkoutSet[] → groupBy session → WorkoutDataset
                                               ↓
                          React context / hooks ← metrics selectors
                                               ↓
-                         Charts + AI context builder → /api/chat
+                                           Charts
 ```
 
-All parsing and aggregation run **client-side** (Web Worker optional if >50k rows).
+All parsing and aggregation run **client-side** (Web Worker optional if >50k rows). There are no API routes and no server-side data access.
 
-### 8.4 Routing & states
+### 7.4 Routing & states
 
 | Route | Condition |
 |-------|-----------|
 | `/upload` | No dataset in IDB |
 | `/overview` | Dataset exists (default) |
 
-Middleware (lightweight): read cookie `has-data=1` or skip — prefer client guard to avoid flash.
+Prefer a client guard over middleware to avoid a redirect flash.
 
 ---
 
-## 9. Deployment & domain
+## 8. Deployment & domain
 
-### 9.1 Vercel
+### 8.1 Vercel
 
 1. Create Git repo `setdown`.
 2. Import project in Vercel; framework preset Next.js; project name **setdown**.
-3. Set env: `ANTHROPIC_API_KEY`.
-4. Production branch: `main`.
+3. Production branch: `main`. No environment variables are required.
 
-### 9.2 Custom domain `setdown.gradiense.com`
+### 8.2 Custom domain `setdown.gradiense.com`
 
 1. Vercel project → **Settings → Domains** → Add `setdown.gradiense.com`.
 2. DNS at Gradiense host (or Cloudflare):
@@ -416,7 +338,7 @@ Middleware (lightweight): read cookie `has-data=1` or skip — prefer client gua
 3. Wait for SSL (Vercel auto).
 4. Optional: redirect `www` → apex or subdomain only.
 
-### 9.3 `vercel.json` (optional)
+### 8.3 `vercel.json` (optional)
 
 ```json
 {
@@ -434,23 +356,22 @@ Middleware (lightweight): read cookie `has-data=1` or skip — prefer client gua
 
 ---
 
-## 10. Security & privacy
+## 9. Security & privacy
 
 | Topic | Approach |
 |-------|----------|
-| Workout data | Stays in browser (IndexedDB); not sent to server except AI summary |
-| API key | Server-only `ANTHROPIC_API_KEY` |
-| AI requests | User-initiated; log no raw CSV on server |
+| Workout data | Stays in the browser (IndexedDB); never transmitted |
+| Backend | None. No database, no API routes, no secrets to manage |
 | HTTPS | Enforced via Vercel |
 | CSP | Default Next; tighten if needed |
 | File upload | Client-only read; no `multipart` to server |
 
 **Privacy copy (Settings):**  
-“Your CSV is processed on this device. Only a short summary is sent to Claude when you ask a question.”
+“Your CSV is processed on this device and stored in your browser. It never leaves.”
 
 ---
 
-## 11. Implementation phases
+## 10. Implementation phases
 
 ### Phase 1 — Foundation (2–3 days)
 
@@ -471,21 +392,16 @@ Middleware (lightweight): read cookie `has-data=1` or skip — prefer client gua
 - [ ] Exercise list + search
 - [ ] Detail charts + PR badges
 
-### Phase 4 — AI (1–2 days)
-
-- [ ] `/api/chat` + streaming UI
-- [ ] Context builder + suggested prompts
-
-### Phase 5 — Deploy (0.5 day)
+### Phase 4 — Deploy (0.5 day)
 
 - [ ] Vercel prod + `setdown.gradiense.com`
 - [ ] Smoke test on mobile Safari
 
-**Total estimate:** ~7–10 days for one developer.
+**Total estimate:** ~6–8 days for one developer.
 
 ---
 
-## 12. Testing checklist
+## 11. Testing checklist
 
 | Test | Expected |
 |------|----------|
@@ -494,14 +410,13 @@ Middleware (lightweight): read cookie `has-data=1` or skip — prefer client gua
 | Warmup toggle | Volume recalculates |
 | Empty CSV | Error message |
 | Wrong columns | Validation error |
-| AI without data | Disabled input + hint |
-| AI with data | Coherent answer citing stats |
+| Clear data | IndexedDB emptied, back to upload state |
 | Offline after load | Overview still works |
 | Mobile 390px | Nav + cards usable |
 
 ---
 
-## 13. UI component checklist (WHOOP mapping)
+## 12. UI component checklist (WHOOP mapping)
 
 | WHOOP pattern | Component |
 |---------------|-----------|
@@ -510,8 +425,6 @@ Middleware (lightweight): read cookie `has-data=1` or skip — prefer client gua
 | Stat row (icon, label, value, trend) | `StatRow` |
 | Card with title | `MetricCard` |
 | Thin line chart | `TrendChart` |
-| Insight paragraph card | `InsightCard` |
-| Pill AI input | `ChatInput` |
 | Tab underline | `TabNav` |
 | FAB `+` | `UploadFab` |
 | Dashed CTA card | `EmptyStateCard` |
@@ -519,17 +432,15 @@ Middleware (lightweight): read cookie `has-data=1` or skip — prefer client gua
 
 ---
 
-## 14. Open questions (decide before build)
+## 13. Open questions (decide before build)
 
 1. ~~**Project name / subdomain**~~ — **setdown** / `setdown.gradiense.com` ✓
 2. **Weight units** — Sample appears metric (kg). Confirm or add lb toggle.
 3. **Warmups in volume** — Default exclude `W` sets?
-4. **AI model tier** — Sonnet vs Haiku for cost/latency.
-5. **Auth** — Needed if app might be public URL (optional basic `middleware` password for v1).
 
 ---
 
-## 15. Sample metrics (from provided CSV)
+## 14. Sample metrics (from provided CSV)
 
 Useful for validating dashboards:
 
@@ -545,7 +456,7 @@ Useful for validating dashboards:
 
 ---
 
-## 16. Dependencies (starter `package.json`)
+## 15. Dependencies (starter `package.json`)
 
 ```json
 {
@@ -554,7 +465,6 @@ Useful for validating dashboards:
     "next": "^15.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "@anthropic-ai/sdk": "^0.39.0",
     "papaparse": "^5.4.1",
     "recharts": "^2.15.0",
     "date-fns": "^4.1.0",
@@ -573,16 +483,11 @@ Useful for validating dashboards:
 
 ---
 
-## 17. Acceptance criteria (MVP done)
+## 16. Acceptance criteria (MVP done)
 
 1. User can upload `strong_workouts*.csv` and see overview within 5s on sample file.
 2. Weekly volume chart shows ≥12 weeks of history.
 3. User can open any exercise and see a weight-over-time line.
 4. User can browse session history and view set-level detail.
-5. User can ask Claude one question and receive a grounded answer using real summary stats.
-6. Site runs on Vercel at `https://setdown.gradiense.com` with valid SSL.
-7. UI matches dark WHOOP aesthetic (cards, typography, accent colors) on mobile width.
-
----
-
-*Next step: scaffold the `setdown` Next.js repo and implement Phase 1.*
+5. Site runs on Vercel at `https://setdown.gradiense.com` with valid SSL.
+6. UI matches dark WHOOP aesthetic (cards, typography, accent colors) on mobile width.

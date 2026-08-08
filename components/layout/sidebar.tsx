@@ -1,17 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Dumbbell,
-  History,
-  LayoutDashboard,
-  Sparkles,
-} from "lucide-react";
+import { Dumbbell, History, LayoutDashboard, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/context/auth-context";
-import { UserMenu } from "@/components/auth/user-menu";
-import { SignInButton } from "@/components/auth/sign-in-button";
+import { SettingsSheet } from "@/components/settings/settings-sheet";
 
 interface NavItem {
   href: string;
@@ -19,18 +13,15 @@ interface NavItem {
   icon: typeof LayoutDashboard;
 }
 
-const baseNav: NavItem[] = [
+const navItems: NavItem[] = [
   { href: "/overview", label: "Overview", icon: LayoutDashboard },
   { href: "/exercises", label: "Exercises", icon: Dumbbell },
   { href: "/history", label: "History", icon: History },
-  { href: "/coach", label: "Coach", icon: Sparkles },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { isAuthenticated, isLoading } = useAuth();
-
-  const items = baseNav;
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col border-r border-[var(--border-subtle)] bg-[var(--bg-elevated)] lg:flex">
@@ -43,7 +34,7 @@ export function Sidebar() {
       </div>
 
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-4">
-        {items.map(({ href, label, icon: Icon }) => {
+        {navItems.map(({ href, label, icon: Icon }) => {
           const active =
             pathname === href ||
             (href !== "/overview" && pathname.startsWith(href));
@@ -72,14 +63,17 @@ export function Sidebar() {
       </nav>
 
       <div className="border-t border-[var(--border-subtle)] p-3">
-        {isLoading ? (
-          <div className="h-12" />
-        ) : isAuthenticated ? (
-          <UserMenu />
-        ) : (
-          <SignInButton className="w-full" />
-        )}
+        <button
+          type="button"
+          onClick={() => setSettingsOpen(true)}
+          className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-base)] hover:text-[var(--text-primary)]"
+        >
+          <Settings className="h-4 w-4 shrink-0" strokeWidth={1.75} />
+          Settings
+        </button>
       </div>
+
+      <SettingsSheet open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </aside>
   );
 }

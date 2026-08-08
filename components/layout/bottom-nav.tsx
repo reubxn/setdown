@@ -2,30 +2,22 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Dumbbell,
-  History,
-  LayoutDashboard,
-  Sparkles,
-} from "lucide-react";
+import { Dumbbell, History, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
   { href: "/overview", label: "Overview", icon: LayoutDashboard },
   { href: "/exercises", label: "Exercises", icon: Dumbbell },
   { href: "/history", label: "History", icon: History },
-  { href: "/coach", label: "Coach", icon: Sparkles },
 ];
 
 export function BottomNav() {
   const pathname = usePathname();
 
-  const all = items;
-
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-[var(--border-subtle)] bg-[var(--bg-elevated)]/95 backdrop-blur-md lg:hidden">
       <div className="mx-auto flex max-w-lg items-center justify-around px-2 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
-        {all.map(({ href, label, icon: Icon }) => {
+        {items.map(({ href, label, icon: Icon }) => {
           const active =
             pathname === href ||
             (href !== "/overview" && pathname.startsWith(href));

@@ -1,19 +1,18 @@
-import { convexAuthNextjsMiddleware } from "@convex-dev/auth/nextjs/server";
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 
-export default convexAuthNextjsMiddleware((request) => {
+export function middleware(request: NextRequest) {
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
   const csp = [
     `default-src 'self'`,
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' 'unsafe-inline' 'unsafe-eval'`,
     `style-src 'self' 'unsafe-inline'`,
-    `img-src 'self' https://lh3.googleusercontent.com data: blob:`,
+    `img-src 'self' data: blob:`,
     `font-src 'self' data:`,
-    `connect-src 'self' https://*.convex.cloud https://*.convex.site wss://*.convex.cloud wss://*.convex.site https://accounts.google.com`,
-    `frame-src 'self' https://accounts.google.com`,
+    `connect-src 'self'`,
+    `frame-src 'self'`,
     `frame-ancestors 'none'`,
     `base-uri 'self'`,
-    `form-action 'self' https://accounts.google.com`,
+    `form-action 'self'`,
     `object-src 'none'`,
     `worker-src 'self' blob:`,
     `manifest-src 'self'`,
@@ -26,8 +25,8 @@ export default convexAuthNextjsMiddleware((request) => {
   const response = NextResponse.next({ request: { headers: requestHeaders } });
   response.headers.set("Content-Security-Policy", csp);
   return response;
-});
+}
 
 export const config = {
-  matcher: ["/((?!.*\\..*|_next).*)", "/", "/(api|trpc)(.*)"],
+  matcher: ["/((?!.*\\..*|_next).*)", "/"],
 };

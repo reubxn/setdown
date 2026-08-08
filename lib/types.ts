@@ -34,27 +34,3 @@ export interface WorkoutDataset {
   exercises: string[];
   dateRange: { start: Date; end: Date };
 }
-
-export interface AIContext {
-  dateRange: { start: string; end: string };
-  totalSessions: number;
-  sessionsLast4Weeks: number;
-  volumeLast4Weeks: number;
-  volumePrior4Weeks: number;
-  volumeChangePercent: number;
-  workoutsPerWeekAvg: number;
-  topExercisesByVolume: { name: string; volume: number }[];
-  recentPRs: {
-    exercise: string;
-    metric: string;
-    value: number;
-    date: string;
-  }[];
-  exerciseTrends?: { name: string; maxWeightSeries: [string, number][] }[];
-  userMessage: string;
-}
-
-export interface ChatMessage {
-  role: "user" | "assistant";
-  content: string;
-}

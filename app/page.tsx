@@ -4,8 +4,6 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useDataset } from "@/context/dataset-context";
-import { useAuth } from "@/context/auth-context";
-import { SignInButton } from "@/components/auth/sign-in-button";
 import { Hero } from "@/components/landing/hero";
 import { ExportTutorial } from "@/components/landing/export-tutorial";
 import { PrivacyNote } from "@/components/landing/privacy-note";
@@ -14,10 +12,8 @@ import { DashboardPreview } from "@/components/landing/dashboard-preview";
 export default function HomePage() {
   const router = useRouter();
   const { dataset, loading } = useDataset();
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
 
-  const shouldRedirect =
-    (!authLoading && isAuthenticated) || (!loading && !!dataset);
+  const shouldRedirect = !loading && !!dataset;
 
   useEffect(() => {
     if (shouldRedirect) {
@@ -33,7 +29,6 @@ export default function HomePage() {
         <Link href="/" className="text-base font-semibold tracking-tight">
           setdown
         </Link>
-        <SignInButton />
       </header>
 
       <Hero />

@@ -38,7 +38,7 @@ if you forget and end up with two tabs in `/Users/reuba/strong`, stop, `git stas
 ## commits
 
 - author: you (reuban ramsden). **never** add `Co-Authored-By: Claude` or "generated with claude code" footers.
-- style: lowercase, brief, present tense. example: `add dropzone component`, `wire convex auth`, `fix sidebar overflow on narrow widths`
+- style: lowercase, brief, present tense. example: `add dropzone component`, `wire indexeddb persistence`, `fix sidebar overflow on narrow widths`
 - one logical change per commit where reasonable. squash on merge if a branch got noisy.
 - no emojis.
 
@@ -88,18 +88,13 @@ no deploy preview workflow needed — vercel handles that automatically per pr.
 
 ## environment
 
-required env vars (set in vercel + locally in `.env.local`):
-- `CONVEX_DEPLOYMENT` — convex deployment name
-- `NEXT_PUBLIC_CONVEX_URL` — convex public url
-- `AUTH_GOOGLE_ID` — google oauth client id
-- `AUTH_GOOGLE_SECRET` — google oauth client secret
-- `ANTHROPIC_API_KEY` — server-side only
+none. the app has no backend and no secrets, so `npm install && npm run dev` is the whole setup. same in vercel: no env vars to configure.
 
 ## coordination
 
 - status board: [track_handoff.md](./TRACK_HANDOFF.md). update on start + finish.
 - spec: [ux_overhaul_spec.md](./UX_OVERHAUL_SPEC.md). source of truth for scope.
-- conflicts on shared files: 0.2 before 1.0 for `app/layout.tsx`. flag others in the handoff notes log.
+- conflicts on shared files: flag them in the handoff notes log before you start editing.
 
 ## do not
 
